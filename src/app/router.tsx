@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router'
 import { AuthLayout } from '@/app/AuthLayout'
 import { ProtectedLayout } from '@/app/ProtectedLayout'
 import { RootLayout } from '@/app/RootLayout'
+import { SettingsPage } from '@/features/settings/pages/SettingsPage'
 
 export const router = createBrowserRouter([
   {
@@ -17,7 +18,10 @@ export const router = createBrowserRouter([
       },
       {
         element: <ProtectedLayout />,
-        children: [{ index: true }],
+        children: [
+          { index: true },
+          { path: '/settings', element: <SettingsPage /> },
+        ],
       },
     ],
   },
