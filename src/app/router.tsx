@@ -1,5 +1,5 @@
 import { SignIn, SignUp } from '@clerk/react'
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, Navigate } from 'react-router'
 import { AuthLayout } from '@/app/AuthLayout'
 import { ProtectedLayout } from '@/app/ProtectedLayout'
 import { RootLayout } from '@/app/RootLayout'
@@ -19,7 +19,7 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedLayout />,
         children: [
-          { index: true },
+          { index: true, element: <Navigate to="/settings" replace /> },
           { path: '/settings', element: <SettingsPage /> },
         ],
       },

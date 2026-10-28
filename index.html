@@ -1,7 +1,12 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Runs before the first paint so the page never flashes the wrong theme. Dark unless the
+      // user picked light; ThemeToggle writes the same localStorage key.
+      document.documentElement.classList.toggle('dark', localStorage.getItem('argus-theme') !== 'light')
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Argus</title>

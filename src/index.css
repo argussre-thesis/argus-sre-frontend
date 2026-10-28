@@ -26,6 +26,9 @@
     --color-input: var(--input);
     --color-border: var(--border);
     --color-destructive: var(--destructive);
+    --color-warning: var(--warning);
+    --color-info: var(--info);
+    --color-success: var(--success);
     --color-accent-foreground: var(--accent-foreground);
     --color-accent: var(--accent);
     --color-muted-foreground: var(--muted-foreground);
@@ -82,6 +85,11 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+    /* Status colors, not part of a tweakcn export: keep them when replacing the theme.
+       Light values are the 700 shades so text on a tinted badge stays readable (4.5:1). */
+    --warning: oklch(0.555 0.163 48.998);
+    --info: oklch(0.546 0.245 262.881);
+    --success: oklch(0.527 0.154 150.069);
 }
 
 .dark {
@@ -116,6 +124,9 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+    --warning: oklch(0.828 0.189 84.429);
+    --info: oklch(0.707 0.165 254.624);
+    --success: oklch(0.792 0.209 151.711);
 }
 
 @layer base {

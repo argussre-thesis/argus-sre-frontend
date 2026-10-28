@@ -1,16 +1,21 @@
+import { ErrorState } from '@/components/common/ErrorState'
+import { PageHeader } from '@/components/common/PageHeader'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCurrentOrganization } from '@/features/settings/hooks'
 
 export function SettingsPage() {
-  const { data: org, isPending, isError, error } = useCurrentOrganization()
+  const { data: org, isPending, isError, error, refetch } = useCurrentOrganization()
 
   return (
-    <main className="flex flex-col gap-6 p-6">
-      <h1 className="text-xl font-semibold">Settings</h1>
+    <>
+      <PageHeader
+        title="Settings"
+        description="Your organization and how alerts are grouped into incidents."
+      />
       {isPending ? (
         <Skeleton className="h-24 w-full max-w-md" />
       ) : isError ? (
-        <p className="text-sm text-destructive">{error.message}</p>
+        <ErrorState title="Couldn't load settings" error={error} onRetry={() => refetch()} />
       ) : (
         <dl className="grid max-w-md grid-cols-2 gap-x-4 gap-y-2 text-sm">
           <dt className="text-muted-foreground">Organization</dt>
@@ -23,6 +28,6 @@ export function SettingsPage() {
           <dd>{org.incidentGroupingWindowMinutes} min</dd>
         </dl>
       )}
-    </main>
+    </>
   )
 }

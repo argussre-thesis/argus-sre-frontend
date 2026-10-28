@@ -1,10 +1,8 @@
-import {
-  OrganizationList,
-  OrganizationSwitcher,
-  useAuth,
-  UserButton,
-} from '@clerk/react'
+import { OrganizationList, useAuth, UserButton } from '@clerk/react'
 import { Navigate, Outlet } from 'react-router'
+import { AppSidebar } from '@/app/AppSidebar'
+import { ThemeToggle } from '@/components/common/ThemeToggle'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 
 export function ProtectedLayout() {
   const { isLoaded, isSignedIn, orgId } = useAuth()
@@ -22,12 +20,20 @@ export function ProtectedLayout() {
   }
 
   return (
-    <div className="min-h-svh">
-      <header className="flex items-center justify-between border-b px-4 py-2">
-        <OrganizationSwitcher hidePersonal />
-        <UserButton />
-      </header>
-      <Outlet />
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-12 items-center gap-2 border-b px-4">
+          <SidebarTrigger aria-label="Toggle sidebar" />
+          <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
+            <UserButton />
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col gap-6 p-6">
+          <Outlet />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
