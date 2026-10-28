@@ -1,5 +1,5 @@
 import { OrganizationSwitcher } from '@clerk/react'
-import { Settings } from 'lucide-react'
+import { Settings, Siren } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
 import {
   Sidebar,
@@ -13,7 +13,10 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 
-const navItems = [{ to: '/settings', label: 'Settings', icon: Settings }]
+const navItems = [
+  { to: '/incidents', label: 'Incidents', icon: Siren },
+  { to: '/settings', label: 'Settings', icon: Settings },
+]
 
 export function AppSidebar() {
   const { pathname } = useLocation()

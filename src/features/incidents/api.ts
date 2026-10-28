@@ -1,0 +1,14 @@
+import { apiRequest } from '@/lib/api-client'
+import type { IncidentFilters, IncidentPage } from '@/types/incident'
+
+export function listIncidents(orgId: string, filters: IncidentFilters, cursor?: string) {
+  const params = new URLSearchParams()
+  if (filters.status) params.set('status', filters.status)
+  if (filters.clusterId) params.set('clusterId', filters.clusterId)
+  if (cursor) params.set('cursor', cursor)
+  const query = params.toString()
+
+  return apiRequest<IncidentPage>(
+    `/organizations/${encodeURIComponent(orgId)}/incidents${query ? `?${query}` : ''}`,
+  )
+}

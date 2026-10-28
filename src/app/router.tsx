@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router'
 import { AuthLayout } from '@/app/AuthLayout'
 import { ProtectedLayout } from '@/app/ProtectedLayout'
 import { RootLayout } from '@/app/RootLayout'
+import { IncidentsPage } from '@/features/incidents/pages/IncidentsPage'
 import { SettingsPage } from '@/features/settings/pages/SettingsPage'
 
 export const router = createBrowserRouter([
@@ -19,7 +20,8 @@ export const router = createBrowserRouter([
       {
         element: <ProtectedLayout />,
         children: [
-          { index: true, element: <Navigate to="/settings" replace /> },
+          { index: true, element: <Navigate to="/incidents" replace /> },
+          { path: '/incidents', element: <IncidentsPage /> },
           { path: '/settings', element: <SettingsPage /> },
         ],
       },
