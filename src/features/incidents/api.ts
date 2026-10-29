@@ -18,3 +18,10 @@ export function getIncident(orgId: string, incidentId: string) {
     `/organizations/${encodeURIComponent(orgId)}/incidents/${encodeURIComponent(incidentId)}`,
   )
 }
+
+export function resolveIncident(orgId: string, incidentId: string) {
+  return apiRequest<IncidentDetail>(
+    `/organizations/${encodeURIComponent(orgId)}/incidents/${encodeURIComponent(incidentId)}/resolve`,
+    { method: 'POST' },
+  )
+}

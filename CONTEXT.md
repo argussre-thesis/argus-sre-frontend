@@ -53,9 +53,10 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | 3 | `api-client.ts`, query defaults, `useOrgId`; first call `GET /organizations/:orgId` on a basic Settings page | ✅ 2026-10-28 |
 | 4 | Theme + status colours chosen (live preview, since deleted); sidebar shell, `ThemeToggle`, `PageHeader`, `ErrorState` | ✅ 2026-10-28 |
 | 5 | Incidents list: status and cluster filters, cursor paging ("Load more"), `StatusBadge`, `EmptyState`, relative times; the home page | ✅ 2026-10-28 |
-| 6 | Incident page, in four parts: **6a** ✅ 2026-10-29 route `/incidents/:incidentId` (list titles link to it), summary, alerts table; **6b** Resolve; **6c** Investigate + the investigation's status (poll ~15s); **6d** the RCA with `react-markdown` | **in progress**, next 6b |
+| 6 | Incident page, in four parts: **6a** ✅ 2026-10-29 route `/incidents/:incidentId` (list titles link to it), summary, alerts table; **6b** ✅ 2026-10-29 Resolve (open incidents only; the response replaces the cached incident, lists marked stale); **6c** Investigate + the investigation's status (poll ~15s); **6d** the RCA with `react-markdown` | paused at 6c for step 7 (user, 2026-10-29) |
+| 7 | Clusters and alert sources: **C1** ✅ 2026-10-29 Clusters page (read-only, sidebar entry); **C2** ✅ 2026-10-29 add cluster (name checked in the browser with the backend's DNS-1123 rule), runner token shown once with Copy, an outside click can't close it; **C3** rotate token, delete; **S1** alert sources page; **S2** add (name, clusters, cluster label under "Advanced"), webhook token + URL shown once; **S3** edit, rotate, delete. Admin-only actions hidden for members (`useIsOrgAdmin`, Clerk's `orgRole`; the backend still checks) | **in progress**, next C3 |
 
-Later, not ordered: the transcript / timeline (evidence links from the RCA's citations), clusters and alert sources pages (tokens shown once), editing the grouping window (admin), chat (after the agent service's step 8), a "page not found" page, route-level code splitting.
+Later, not ordered: the transcript / timeline (evidence links from the RCA's citations), editing the grouping window (admin), chat (after the agent service's step 8), a "page not found" page, route-level code splitting.
 
 Checked by the user in the browser (2026-10-28): sign-in, the org gate and the shell (the theme preview was inside it). Each step: `npm run typecheck`, `npm run lint`, a build. No test runner yet; new logic was checked with one-off scripts that load the real files through Vite (not kept): `api-client` (every response shape, against a fake server and the real backend's 401), `formatRelativeTime` (11 cases), `listIncidents`' query string. Adding Vitest needs the user's OK.
 
@@ -66,14 +67,15 @@ Checked by the user in the browser (2026-10-28): sign-in, the org gate and the s
 ```
 src/
   app/                router.tsx, RootLayout (ClerkProvider), AuthLayout, ProtectedLayout (auth + org gate + shell),
-                      AppSidebar (nav list: add one entry per page), queryClient.ts, useOrgId.ts
-  components/ui/      shadcn, generated (badge has the warning/info/success variants)
-  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle, RelativeTime
+                      AppSidebar (nav list: add one entry per page), queryClient.ts, useOrgId.ts, useIsOrgAdmin.ts
+  components/ui/      shadcn, generated (badge has the warning/info/success variants). `npx shadcn add` asks before
+                      overwriting an existing file and stops when it can't ask: run it from Bash as `yes n | npx shadcn@latest add …`
+  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle, RelativeTime, CopyField
   hooks/use-mobile.ts shadcn, generated (components.json's `hooks` alias)
   features/
     incidents/        api, hooks, IncidentFilterBar, IncidentTable, IncidentsPage (list);
                       IncidentSummary, AlertTable, IncidentPage (one incident)
-    clusters/         api, hooks (for the incidents filter; no page yet)
+    clusters/         api, hooks (also used by the incidents filter), ClusterTable, AddClusterDialog, ClustersPage
     settings/         api, hooks, SettingsPage (read-only)
   lib/                api-client.ts, status.ts, utils.ts (cn, formatRelativeTime)
   types/              organization, incident, cluster
@@ -96,6 +98,7 @@ src/
 - **Incident list** has no investigation status or alert severity; `investigationStartedAt` isn't in any incident response. Showing "investigated" in the list needs a backend change.
 - **Transcript** (`…/messages`): on OpenAI runs each AI message carries ~30k characters of encrypted reasoning, stored twice (`additional_kwargs.reasoning`, `response_metadata.output`). The UI must ignore them; the payload is large.
 - **Chat** isn't built (agent service step 8); no SSE yet, so investigation progress is polled.
+- **Runner status**: `lastConnectedAt` is set only when a runner connects (its token verify), so the Clusters page can show "last connected", not "connected now". Live status needs the gateway's connection state in the API.
 
 **Ours:**
 - `ThemeToggle` keeps the theme on `<html>` + `localStorage` only; move it into a provider once another component must react to it (e.g. a toast library's `theme` prop).

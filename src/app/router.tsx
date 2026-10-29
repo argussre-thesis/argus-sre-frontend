@@ -3,6 +3,7 @@ import { createBrowserRouter, Navigate } from 'react-router'
 import { AuthLayout } from '@/app/AuthLayout'
 import { ProtectedLayout } from '@/app/ProtectedLayout'
 import { RootLayout } from '@/app/RootLayout'
+import { ClustersPage } from '@/features/clusters/pages/ClustersPage'
 import { IncidentPage } from '@/features/incidents/pages/IncidentPage'
 import { IncidentsPage } from '@/features/incidents/pages/IncidentsPage'
 import { SettingsPage } from '@/features/settings/pages/SettingsPage'
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
           { index: true, element: <Navigate to="/incidents" replace /> },
           { path: '/incidents', element: <IncidentsPage /> },
           { path: '/incidents/:incidentId', element: <IncidentPage /> },
+          { path: '/clusters', element: <ClustersPage /> },
           { path: '/settings', element: <SettingsPage /> },
         ],
       },

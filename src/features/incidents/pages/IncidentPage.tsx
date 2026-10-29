@@ -1,18 +1,20 @@
-import { BellOff, SearchX } from 'lucide-react'
+import { BellOff, CircleCheck, SearchX } from 'lucide-react'
 import { useParams } from 'react-router'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { PageHeader } from '@/components/common/PageHeader'
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AlertTable } from '@/features/incidents/components/AlertTable'
 import { IncidentSummary } from '@/features/incidents/components/IncidentSummary'
-import { useIncident } from '@/features/incidents/hooks'
+import { useIncident, useResolveIncident } from '@/features/incidents/hooks'
 import { ApiError } from '@/lib/api-client'
 
 export function IncidentPage() {
   // The route is /incidents/:incidentId, so the param is always set.
   const { incidentId = '' } = useParams()
   const incident = useIncident(incidentId)
+  const resolve = useResolveIncident(incidentId)
 
   if (incident.isPending) {
     return (
@@ -45,7 +47,24 @@ export function IncidentPage() {
   const { alerts } = incident.data
   return (
     <>
-      <PageHeader title={incident.data.title} />
+      <PageHeader
+        title={incident.data.title}
+        actions={
+          incident.data.status === 'OPEN' && (
+            <Button variant="outline" disabled={resolve.isPending} onClick={() => resolve.mutate()}>
+              <CircleCheck />
+              {resolve.isPending ? 'Resolving…' : 'Resolve'}
+            </Button>
+          )
+        }
+      />
+      {resolve.isError && (
+        <ErrorState
+          title="Couldn't resolve the incident"
+          error={resolve.error}
+          onRetry={() => resolve.mutate()}
+        />
+      )}
       <IncidentSummary incident={incident.data} />
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-medium">Alerts</h2>

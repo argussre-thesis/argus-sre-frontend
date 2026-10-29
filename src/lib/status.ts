@@ -23,3 +23,5 @@ export const alertStatus: Record<AlertStatus, StatusInfo> = {
 export const unknownCluster: StatusInfo = { label: 'Unknown cluster', variant: 'warning' }
 
 export const testIncident: StatusInfo = { label: 'Test', variant: 'secondary' }
+
+export const runnerNeverConnected: StatusInfo = { label: 'Never connected', variant: 'warning' }
