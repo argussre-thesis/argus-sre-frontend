@@ -13,6 +13,26 @@ export type Incident = {
 
 export type IncidentListItem = Incident & { firingAlertCount: number }
 
+export type AlertStatus = 'FIRING' | 'RESOLVED'
+
+export type IncidentAlert = {
+  id: string
+  status: AlertStatus
+  fingerprint: string
+  startsAt: string
+  endsAt: string | null
+  // When the sender last repeated the alert.
+  lastReceivedAt: string
+  // Whatever the sender put on the alert, so any key can be missing.
+  labels: Record<string, string | undefined>
+  annotations: Record<string, string | undefined>
+  generatorUrl: string | null
+  // null = the alert source was deleted.
+  alertSource: { id: string; name: string } | null
+}
+
+export type IncidentDetail = Incident & { alerts: IncidentAlert[] }
+
 export type IncidentPage = {
   incidents: IncidentListItem[]
   nextCursor: string | null

@@ -1,6 +1,6 @@
 import type { VariantProps } from 'class-variance-authority'
 import type { badgeVariants } from '@/components/ui/badge'
-import type { IncidentStatus } from '@/types/incident'
+import type { AlertStatus, IncidentStatus } from '@/types/incident'
 
 type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>
 
@@ -12,6 +12,11 @@ export type StatusInfo = {
 // "Traffic light": red needs attention, green is fixed, amber is a setup problem, grey is noise.
 export const incidentStatus: Record<IncidentStatus, StatusInfo> = {
   OPEN: { label: 'Open', variant: 'destructive' },
+  RESOLVED: { label: 'Resolved', variant: 'success' },
+}
+
+export const alertStatus: Record<AlertStatus, StatusInfo> = {
+  FIRING: { label: 'Firing', variant: 'destructive' },
   RESOLVED: { label: 'Resolved', variant: 'success' },
 }
 

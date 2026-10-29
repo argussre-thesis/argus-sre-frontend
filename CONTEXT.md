@@ -30,6 +30,7 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | Dark mode | Dark first. `dark` class on `<html>`, set by an inline script in `index.html` before the first paint, from `localStorage` `argus-theme`; `ThemeToggle` flips it | No theme provider (shortcut, see §6) |
 | Lists | Filters in the URL search params (`?status=OPEN&cluster=…`), replace, not push | Back from an incident, or a shared link, keeps them |
 | Dev port | 3000 (`strictPort`) | The backend's CORS allows `FRONTEND_URL=http://localhost:3000` |
+| Hosting | Vercel; `vercel.json` rewrites every path to `index.html` (2026-10-29) | Without it a refresh on `/sign-in`, `/incidents/…` gave Vercel's 404. Production uses Clerk's production instance (`pk_live_…`) on the user's domain; the backend's `FRONTEND_URL` must be that domain |
 
 **Status → colour (Traffic light).** In code so far: incident status, unknown cluster, test. The rest is decided, added to `lib/status.ts` when first shown.
 
@@ -52,7 +53,7 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | 3 | `api-client.ts`, query defaults, `useOrgId`; first call `GET /organizations/:orgId` on a basic Settings page | ✅ 2026-10-28 |
 | 4 | Theme + status colours chosen (live preview, since deleted); sidebar shell, `ThemeToggle`, `PageHeader`, `ErrorState` | ✅ 2026-10-28 |
 | 5 | Incidents list: status and cluster filters, cursor paging ("Load more"), `StatusBadge`, `EmptyState`, relative times; the home page | ✅ 2026-10-28 |
-| 6 | Incident page: alerts, Resolve, Investigate, the investigation's status (slow polling), the RCA with `react-markdown` | **next** |
+| 6 | Incident page, in four parts: **6a** ✅ 2026-10-29 route `/incidents/:incidentId` (list titles link to it), summary, alerts table; **6b** Resolve; **6c** Investigate + the investigation's status (poll ~15s); **6d** the RCA with `react-markdown` | **in progress**, next 6b |
 
 Later, not ordered: the transcript / timeline (evidence links from the RCA's citations), clusters and alert sources pages (tokens shown once), editing the grouping window (admin), chat (after the agent service's step 8), a "page not found" page, route-level code splitting.
 
@@ -67,10 +68,11 @@ src/
   app/                router.tsx, RootLayout (ClerkProvider), AuthLayout, ProtectedLayout (auth + org gate + shell),
                       AppSidebar (nav list: add one entry per page), queryClient.ts, useOrgId.ts
   components/ui/      shadcn, generated (badge has the warning/info/success variants)
-  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle
+  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle, RelativeTime
   hooks/use-mobile.ts shadcn, generated (components.json's `hooks` alias)
   features/
-    incidents/        api, hooks (useInfiniteQuery), IncidentFilterBar, IncidentTable, IncidentsPage
+    incidents/        api, hooks, IncidentFilterBar, IncidentTable, IncidentsPage (list);
+                      IncidentSummary, AlertTable, IncidentPage (one incident)
     clusters/         api, hooks (for the incidents filter; no page yet)
     settings/         api, hooks, SettingsPage (read-only)
   lib/                api-client.ts, status.ts, utils.ts (cn, formatRelativeTime)
