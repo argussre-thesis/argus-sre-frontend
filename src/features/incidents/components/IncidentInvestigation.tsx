@@ -4,6 +4,7 @@ import { ErrorState } from '@/components/common/ErrorState'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { InvestigationSummary } from '@/features/incidents/components/InvestigationSummary'
+import { RcaReport } from '@/features/incidents/components/RcaReport'
 import { useInvestigateIncident, useInvestigations } from '@/features/incidents/hooks'
 import type { Incident } from '@/types/incident'
 
@@ -55,7 +56,12 @@ export function IncidentInvestigation({ incident }: Props) {
         />
       )
     }
-    return <InvestigationSummary investigation={latest} />
+    return (
+      <div className="flex flex-col gap-4">
+        <InvestigationSummary investigation={latest} />
+        {latest.report && <RcaReport report={latest.report} />}
+      </div>
+    )
   }
 
   return (
