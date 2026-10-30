@@ -19,3 +19,8 @@ export function formatRelativeTime(iso: string, now = Date.now()): string {
   }
   return "just now"
 }
+
+// For URLs that come from alert senders: only web pages become links, never javascript: and the like.
+export function webUrl(url: string | null | undefined): string | null {
+  return url && /^https?:\/\//i.test(url) ? url : null
+}
