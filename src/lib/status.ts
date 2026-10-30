@@ -25,3 +25,7 @@ export const unknownCluster: StatusInfo = { label: 'Unknown cluster', variant: '
 export const testIncident: StatusInfo = { label: 'Test', variant: 'secondary' }
 
 export const runnerNeverConnected: StatusInfo = { label: 'Never connected', variant: 'warning' }
+
+export const alertSourceNeverReceived: StatusInfo = { label: 'Never received', variant: 'warning' }
+
+export const alertSourceNoClusters: StatusInfo = { label: 'No clusters', variant: 'warning' }

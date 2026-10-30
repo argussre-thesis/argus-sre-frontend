@@ -40,7 +40,7 @@ export function ClustersPage() {
         />
       )
     }
-    return <ClusterTable clusters={clusters.data} />
+    return <ClusterTable clusters={clusters.data} canManage={isAdmin} />
   }
 
   return (

@@ -11,3 +11,17 @@ export function createCluster(orgId: string, name: string) {
     body: { name },
   })
 }
+
+export function rotateClusterToken(orgId: string, clusterId: string) {
+  return apiRequest<{ token: string }>(
+    `/organizations/${encodeURIComponent(orgId)}/clusters/${encodeURIComponent(clusterId)}/token`,
+    { method: 'POST' },
+  )
+}
+
+export function deleteCluster(orgId: string, clusterId: string) {
+  return apiRequest<null>(
+    `/organizations/${encodeURIComponent(orgId)}/clusters/${encodeURIComponent(clusterId)}`,
+    { method: 'DELETE' },
+  )
+}

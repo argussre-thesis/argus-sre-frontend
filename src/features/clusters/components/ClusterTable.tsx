@@ -8,14 +8,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ClusterActions } from '@/features/clusters/components/ClusterActions'
 import { runnerNeverConnected } from '@/lib/status'
 import type { Cluster } from '@/types/cluster'
 
 type Props = {
   clusters: Cluster[]
+  canManage: boolean
 }
 
-export function ClusterTable({ clusters }: Props) {
+export function ClusterTable({ clusters, canManage }: Props) {
   return (
     <div className="rounded-lg border">
       <Table>
@@ -24,6 +26,11 @@ export function ClusterTable({ clusters }: Props) {
             <TableHead>Cluster</TableHead>
             <TableHead>Runner last connected</TableHead>
             <TableHead>Added</TableHead>
+            {canManage && (
+              <TableHead>
+                <span className="sr-only">Actions</span>
+              </TableHead>
+            )}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -40,6 +47,11 @@ export function ClusterTable({ clusters }: Props) {
               <TableCell className="text-muted-foreground">
                 <RelativeTime iso={cluster.createdAt} />
               </TableCell>
+              {canManage && (
+                <TableCell className="text-right">
+                  <ClusterActions cluster={cluster} />
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

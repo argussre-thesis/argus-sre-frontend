@@ -1,7 +1,7 @@
 # Frontend context
 
 > Living document for `argus-sre-frontend/`: decisions, status, and what the backend does or doesn't give us.
-> Last updated: 2026-10-28
+> Last updated: 2026-10-30
 > How code is written here: `CLAUDE.md`. The whole project: `../CONTEXT.md`. API contract: `../argus-sre-backend/src/Usage.md`. Source for the docs pages: `../USER-GUIDE.md`.
 
 ---
@@ -32,12 +32,12 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | Dev port | 3000 (`strictPort`) | The backend's CORS allows `FRONTEND_URL=http://localhost:3000` |
 | Hosting | Vercel; `vercel.json` rewrites every path to `index.html` (2026-10-29) | Without it a refresh on `/sign-in`, `/incidents/…` gave Vercel's 404. Production uses Clerk's production instance (`pk_live_…`) on the user's domain; the backend's `FRONTEND_URL` must be that domain |
 
-**Status → colour (Traffic light).** In code so far: incident status, unknown cluster, test. The rest is decided, added to `lib/status.ts` when first shown.
+**Status → colour (Traffic light).** In code so far: incident and alert status, unknown cluster, test, runner never connected, alert source never received / no clusters. The rest is decided, added to `lib/status.ts` when first shown.
 
 | Badge variant | Used for |
 |---|---|
 | `destructive` (red) | incident OPEN, alert FIRING, severity `critical`, investigation `failed` |
-| `warning` (amber) | severity `warning`, unknown cluster |
+| `warning` (amber) | severity `warning`, unknown cluster, runner never connected, alert source never received or with no clusters left (setup problems) |
 | `info` (blue) | investigation `running`, severity `info` |
 | `success` (green) | incident / alert RESOLVED, investigation `done` |
 | `secondary` (grey) | test incident, unknown or other severity |
@@ -53,12 +53,12 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | 3 | `api-client.ts`, query defaults, `useOrgId`; first call `GET /organizations/:orgId` on a basic Settings page | ✅ 2026-10-28 |
 | 4 | Theme + status colours chosen (live preview, since deleted); sidebar shell, `ThemeToggle`, `PageHeader`, `ErrorState` | ✅ 2026-10-28 |
 | 5 | Incidents list: status and cluster filters, cursor paging ("Load more"), `StatusBadge`, `EmptyState`, relative times; the home page | ✅ 2026-10-28 |
-| 6 | Incident page, in four parts: **6a** ✅ 2026-10-29 route `/incidents/:incidentId` (list titles link to it), summary, alerts table; **6b** ✅ 2026-10-29 Resolve (open incidents only; the response replaces the cached incident, lists marked stale); **6c** Investigate + the investigation's status (poll ~15s); **6d** the RCA with `react-markdown` | paused at 6c for step 7 (user, 2026-10-29) |
-| 7 | Clusters and alert sources: **C1** ✅ 2026-10-29 Clusters page (read-only, sidebar entry); **C2** ✅ 2026-10-29 add cluster (name checked in the browser with the backend's DNS-1123 rule), runner token shown once with Copy, an outside click can't close it; **C3** rotate token, delete; **S1** alert sources page; **S2** add (name, clusters, cluster label under "Advanced"), webhook token + URL shown once; **S3** edit, rotate, delete. Admin-only actions hidden for members (`useIsOrgAdmin`, Clerk's `orgRole`; the backend still checks) | **in progress**, next C3 |
+| 6 | Incident page, in four parts: **6a** ✅ 2026-10-29 route `/incidents/:incidentId` (list titles link to it), summary, alerts table; **6b** ✅ 2026-10-29 Resolve (open incidents only; the response replaces the cached incident, lists marked stale); **6c** Investigate + the investigation's status (poll ~15s); **6d** the RCA with `react-markdown` | paused at 6c for step 7 (user, 2026-10-29); **next** now that 7 is done |
+| 7 | Clusters and alert sources: **C1** ✅ 2026-10-29 Clusters page (read-only, sidebar entry); **C2** ✅ 2026-10-29 add cluster (name checked in the browser with the backend's DNS-1123 rule), runner token shown once with Copy, an outside click can't close it; **C3** ✅ 2026-10-30 a row menu (admins only) with Rotate token (confirm, then the new token shown once, like C2) and Delete (confirm, says what happens; refreshes clusters and every incidents query); **S1** ✅ 2026-10-30 Alert sources page (read-only, sidebar entry): name, clusters, last alert, added; **S2** ✅ 2026-10-30 add (name, cluster checkboxes, cluster label under a collapsed "Advanced"; "Add" stays disabled until a cluster is ticked), then the webhook URL (`VITE_API_URL` + `/webhooks/v1/alerts`) and token shown once with Copy, like C2; **S3** ✅ 2026-10-30 a row menu (admins only): Edit (name, clusters, cluster label, prefilled from the current values; "Advanced" opens by itself for a non-default label), Rotate token (confirm, then URL + new token once), Delete (confirm). Edit and delete also refresh incidents (an alert shows its source's name, or "Deleted source"). Admin-only actions hidden for members (`useIsOrgAdmin`, Clerk's `orgRole`; the backend still checks) | ✅ 2026-10-30 |
 
 Later, not ordered: the transcript / timeline (evidence links from the RCA's citations), editing the grouping window (admin), chat (after the agent service's step 8), a "page not found" page, route-level code splitting.
 
-Checked by the user in the browser (2026-10-28): sign-in, the org gate and the shell (the theme preview was inside it). Each step: `npm run typecheck`, `npm run lint`, a build. No test runner yet; new logic was checked with one-off scripts that load the real files through Vite (not kept): `api-client` (every response shape, against a fake server and the real backend's 401), `formatRelativeTime` (11 cases), `listIncidents`' query string. Adding Vitest needs the user's OK.
+Checked by the user in the browser (2026-10-28): sign-in, the org gate and the shell (the theme preview was inside it). Each step: `npm run typecheck`, `npm run lint`, a build. No test runner yet; new logic was checked with one-off scripts that load the real files through Vite (not kept): `api-client` (every response shape, against a fake server and the real backend's 401), `formatRelativeTime` (11 cases), `listIncidents`' query string, the cluster-name `pattern` compiled with the `v` flag browsers use (11 names), the cluster-label `pattern` the same way (9 names). Steps 6a, 6b, C1, C2 (2026-10-29) and C3, S1, S2, S3 (2026-10-30) are not checked in the browser yet. Adding Vitest needs the user's OK.
 
 ---
 
@@ -75,17 +75,22 @@ src/
   features/
     incidents/        api, hooks, IncidentFilterBar, IncidentTable, IncidentsPage (list);
                       IncidentSummary, AlertTable, IncidentPage (one incident)
-    clusters/         api, hooks (also used by the incidents filter), ClusterTable, AddClusterDialog, ClustersPage
+    clusters/         api, hooks (also used by the incidents filter), ClusterTable, ClusterActions (row menu),
+                      AddClusterDialog, RotateClusterTokenDialog, DeleteClusterDialog, ClustersPage
+    alert-sources/    api (+ `webhookUrl`), hooks, AlertSourceTable, AddAlertSourceDialog, ClusterChecklist and
+                      ClusterLabelField (form parts, shared by add and edit), AlertSourceActions (row menu),
+                      EditAlertSourceDialog + EditAlertSourceForm, RotateAlertSourceTokenDialog, DeleteAlertSourceDialog,
+                      AlertSourcesPage
     settings/         api, hooks, SettingsPage (read-only)
   lib/                api-client.ts, status.ts, utils.ts (cn, formatRelativeTime)
-  types/              organization, incident, cluster
+  types/              organization, incident, cluster, alert-source
 ```
 
 ---
 
 ## 5. Dev setup
 
-- `.env.local` (gitignored): `VITE_API_URL=http://localhost:5000` (the backend's origin, without `/api/v1`), `VITE_CLERK_PUBLISHABLE_KEY`. `.env.example` lists both. Only `VITE_`-prefixed variables reach the browser.
+- `.env.local` (gitignored): `VITE_API_URL` (the backend's origin, without `/api/v1`): `http://localhost:5000`, or staging `https://api.staging.argussre.com` (the user's setting since 2026-10-29; staging's `FRONTEND_URL` must then be `http://localhost:3000`); `VITE_CLERK_PUBLISHABLE_KEY` (`pk_test_…`, the development instance). `.env.example` lists both. Only `VITE_`-prefixed variables reach the browser, and Vite builds them in, so a change on Vercel needs a redeploy.
 - `npm run dev` → http://localhost:3000. The backend (`npm run dev` in `../argus-sre-backend`, port 5000) must have `FRONTEND_URL=http://localhost:3000`.
 - Calling the API by hand: `Authorization: Bearer <await window.Clerk.session.getToken()>` from the browser console (expires in about a minute).
 
@@ -102,7 +107,11 @@ src/
 
 **Ours:**
 - `ThemeToggle` keeps the theme on `<html>` + `localStorage` only; move it into a provider once another component must react to it (e.g. a toast library's `theme` prop).
-- Main bundle 548 KB (170 KB gzipped), over Vite's 500 KB warning, mostly Clerk's bundled UI. Route-level lazy loading later.
+- Main bundle 655 KB (197 KB gzipped, 2026-10-30; 617 KB / 189 KB gzipped on 2026-10-29, 548 KB on 2026-10-28), over Vite's 500 KB warning, mostly Clerk's bundled UI. Route-level lazy loading later.
+- Incident page: Resolve has no "are you sure" (offered, not asked for; a manual resolve can't be undone); no in-page back link (the sidebar, and the browser's Back, which keeps the list's filters); only the title in a list row is a link; alert labels aren't shown.
+- Rotate and Delete dialogs are near copies for clusters and alert sources (and the add dialogs' token view); a shared confirm dialog in `components/common/` once a third feature needs one.
+- Row menus (clusters, alert sources): `DropdownMenu modal={false}` (a modal menu opening a modal dialog can leave the page unclickable in Radix). Closing a dialog opened from it doesn't return focus to the menu button.
+- Add alert source: the cluster checklist doesn't scroll on its own (fine for a few clusters, the API allows 100); a cluster label made invalid and then hidden by closing "Advanced" isn't checked by the browser (the backend's 400 shows under the form).
 - Unknown URLs show React Router's default error screen.
 - Clerk's "membership required" / session tasks not tried; the org gate covers a signed-in user without an active org.
 - `npm audit`: 3 low, all in the shadcn CLI (`deepmerge`), not in the bundle.
