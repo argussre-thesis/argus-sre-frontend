@@ -1,3 +1,5 @@
+import { Link } from 'react-router'
+import { RelativeTime } from '@/components/common/RelativeTime'
 import { StatusBadge } from '@/components/common/StatusBadge'
 import {
   Table,
@@ -8,7 +10,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { incidentStatus, testIncident, unknownCluster } from '@/lib/status'
-import { formatRelativeTime } from '@/lib/utils'
 import type { IncidentListItem } from '@/types/incident'
 
 type Props = {
@@ -33,7 +34,9 @@ export function IncidentTable({ incidents }: Props) {
             <TableRow key={incident.id}>
               <TableCell className="font-medium whitespace-normal">
                 <div className="flex items-center gap-2">
-                  {incident.title}
+                  <Link to={`/incidents/${incident.id}`} className="hover:underline">
+                    {incident.title}
+                  </Link>
                   {incident.isTest && <StatusBadge status={testIncident} />}
                 </div>
               </TableCell>
@@ -45,12 +48,7 @@ export function IncidentTable({ incidents }: Props) {
               </TableCell>
               <TableCell className="text-right tabular-nums">{incident.firingAlertCount}</TableCell>
               <TableCell className="text-muted-foreground">
-                <time
-                  dateTime={incident.createdAt}
-                  title={new Date(incident.createdAt).toLocaleString()}
-                >
-                  {formatRelativeTime(incident.createdAt)}
-                </time>
+                <RelativeTime iso={incident.createdAt} />
               </TableCell>
             </TableRow>
           ))}

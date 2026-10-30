@@ -1,5 +1,5 @@
 import { apiRequest } from '@/lib/api-client'
-import type { IncidentFilters, IncidentPage } from '@/types/incident'
+import type { IncidentDetail, IncidentFilters, IncidentPage } from '@/types/incident'
 
 export function listIncidents(orgId: string, filters: IncidentFilters, cursor?: string) {
   const params = new URLSearchParams()
@@ -10,5 +10,18 @@ export function listIncidents(orgId: string, filters: IncidentFilters, cursor?: 
 
   return apiRequest<IncidentPage>(
     `/organizations/${encodeURIComponent(orgId)}/incidents${query ? `?${query}` : ''}`,
+  )
+}
+
+export function getIncident(orgId: string, incidentId: string) {
+  return apiRequest<IncidentDetail>(
+    `/organizations/${encodeURIComponent(orgId)}/incidents/${encodeURIComponent(incidentId)}`,
+  )
+}
+
+export function resolveIncident(orgId: string, incidentId: string) {
+  return apiRequest<IncidentDetail>(
+    `/organizations/${encodeURIComponent(orgId)}/incidents/${encodeURIComponent(incidentId)}/resolve`,
+    { method: 'POST' },
   )
 }

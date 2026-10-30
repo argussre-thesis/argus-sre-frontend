@@ -1,6 +1,6 @@
 import type { VariantProps } from 'class-variance-authority'
 import type { badgeVariants } from '@/components/ui/badge'
-import type { IncidentStatus } from '@/types/incident'
+import type { AlertStatus, IncidentStatus } from '@/types/incident'
 
 type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>
 
@@ -15,6 +15,17 @@ export const incidentStatus: Record<IncidentStatus, StatusInfo> = {
   RESOLVED: { label: 'Resolved', variant: 'success' },
 }
 
+export const alertStatus: Record<AlertStatus, StatusInfo> = {
+  FIRING: { label: 'Firing', variant: 'destructive' },
+  RESOLVED: { label: 'Resolved', variant: 'success' },
+}
+
 export const unknownCluster: StatusInfo = { label: 'Unknown cluster', variant: 'warning' }
 
 export const testIncident: StatusInfo = { label: 'Test', variant: 'secondary' }
+
+export const runnerNeverConnected: StatusInfo = { label: 'Never connected', variant: 'warning' }
+
+export const alertSourceNeverReceived: StatusInfo = { label: 'Never received', variant: 'warning' }
+
+export const alertSourceNoClusters: StatusInfo = { label: 'No clusters', variant: 'warning' }
