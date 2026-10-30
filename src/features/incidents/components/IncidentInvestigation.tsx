@@ -1,8 +1,10 @@
 import { Bot } from 'lucide-react'
+import { useState } from 'react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
+import { InvestigationPicker } from '@/features/incidents/components/InvestigationPicker'
 import { InvestigationSummary } from '@/features/incidents/components/InvestigationSummary'
 import { RcaReport } from '@/features/incidents/components/RcaReport'
 import { useInvestigateIncident, useInvestigations } from '@/features/incidents/hooks'
@@ -24,9 +26,17 @@ function whyNotInvestigable(incident: Incident) {
 export function IncidentInvestigation({ incident }: Props) {
   const investigations = useInvestigations(incident.id)
   const investigate = useInvestigateIncident(incident.id)
+  // null = follow the newest run, so a new one shows up by itself.
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const latest = investigations.data?.[0]
+  const shown = investigations.data?.find((run) => run.id === selectedId) ?? latest
   const running = latest?.status === 'running'
   const blocked = whyNotInvestigable(incident)
+
+  function startInvestigation() {
+    setSelectedId(null)
+    investigate.mutate()
+  }
 
   function buttonLabel() {
     if (investigate.isPending) return 'Starting…'
@@ -34,7 +44,7 @@ export function IncidentInvestigation({ incident }: Props) {
     return latest ? 'Investigate again' : 'Investigate'
   }
 
-  function renderLatest() {
+  function renderRun() {
     if (investigations.isPending) {
       return <Skeleton className="h-16 w-full" />
     }
@@ -47,7 +57,7 @@ export function IncidentInvestigation({ incident }: Props) {
         />
       )
     }
-    if (!latest) {
+    if (!shown) {
       return (
         <EmptyState
           icon={Bot}
@@ -58,36 +68,45 @@ export function IncidentInvestigation({ incident }: Props) {
     }
     return (
       <div className="flex flex-col gap-4">
-        <InvestigationSummary investigation={latest} />
-        {latest.report && <RcaReport report={latest.report} />}
+        <InvestigationSummary investigation={shown} />
+        {shown.report && <RcaReport report={shown.report} />}
       </div>
     )
   }
 
   return (
     <section className="flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-sm font-medium">Investigation</h2>
-        {!blocked && (
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={investigate.isPending || investigations.isPending || running}
-            onClick={() => investigate.mutate()}
-          >
-            <Bot />
-            {buttonLabel()}
-          </Button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {shown && investigations.data && investigations.data.length > 1 && (
+            <InvestigationPicker
+              investigations={investigations.data}
+              selectedId={shown.id}
+              onSelect={setSelectedId}
+            />
+          )}
+          {!blocked && (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={investigate.isPending || investigations.isPending || running}
+              onClick={startInvestigation}
+            >
+              <Bot />
+              {buttonLabel()}
+            </Button>
+          )}
+        </div>
       </div>
       {investigate.isError && (
         <ErrorState
           title="Couldn't start the investigation"
           error={investigate.error}
-          onRetry={() => investigate.mutate()}
+          onRetry={startInvestigation}
         />
       )}
-      {renderLatest()}
+      {renderRun()}
     </section>
   )
 }
