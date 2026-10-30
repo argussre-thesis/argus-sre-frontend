@@ -6,6 +6,7 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AlertTable } from '@/features/incidents/components/AlertTable'
+import { IncidentInvestigation } from '@/features/incidents/components/IncidentInvestigation'
 import { IncidentSummary } from '@/features/incidents/components/IncidentSummary'
 import { useIncident, useResolveIncident } from '@/features/incidents/hooks'
 import { ApiError } from '@/lib/api-client'
@@ -66,6 +67,7 @@ export function IncidentPage() {
         />
       )}
       <IncidentSummary incident={incident.data} />
+      <IncidentInvestigation incident={incident.data} />
       <section className="flex flex-col gap-2">
         <h2 className="text-sm font-medium">Alerts</h2>
         {alerts.length === 0 ? (

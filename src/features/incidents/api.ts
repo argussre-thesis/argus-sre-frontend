@@ -1,5 +1,6 @@
 import { apiRequest } from '@/lib/api-client'
 import type { IncidentDetail, IncidentFilters, IncidentPage } from '@/types/incident'
+import type { Investigation } from '@/types/investigation'
 
 export function listIncidents(orgId: string, filters: IncidentFilters, cursor?: string) {
   const params = new URLSearchParams()
@@ -24,4 +25,19 @@ export function resolveIncident(orgId: string, incidentId: string) {
     `/organizations/${encodeURIComponent(orgId)}/incidents/${encodeURIComponent(incidentId)}/resolve`,
     { method: 'POST' },
   )
+}
+
+export function investigateIncident(orgId: string, incidentId: string) {
+  return apiRequest<{ id: string }>(
+    `/organizations/${encodeURIComponent(orgId)}/incidents/${encodeURIComponent(incidentId)}/investigate`,
+    { method: 'POST' },
+  )
+}
+
+// Newest first.
+export async function listInvestigations(orgId: string, incidentId: string) {
+  const { investigations } = await apiRequest<{ investigations: Investigation[] }>(
+    `/organizations/${encodeURIComponent(orgId)}/incidents/${encodeURIComponent(incidentId)}/investigations`,
+  )
+  return investigations
 }
