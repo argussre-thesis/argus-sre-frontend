@@ -1,4 +1,5 @@
 import type { UseMutationResult } from '@tanstack/react-query'
+import type { ReactNode } from 'react'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Button } from '@/components/ui/button'
 import {
@@ -9,9 +10,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog'
 
 type Props = {
+  trigger?: ReactNode
   title: string
   description: string
   confirmLabel: string
@@ -24,6 +27,7 @@ type Props = {
 }
 
 export function ConfirmDialog({
+  trigger,
   title,
   description,
   confirmLabel,
@@ -40,6 +44,7 @@ export function ConfirmDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
