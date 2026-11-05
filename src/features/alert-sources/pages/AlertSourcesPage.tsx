@@ -1,5 +1,4 @@
 import { Webhook } from 'lucide-react'
-import { useIsOrgAdmin } from '@/app/useIsOrgAdmin'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -10,7 +9,6 @@ import { useAlertSources } from '@/features/alert-sources/hooks'
 
 export function AlertSourcesPage() {
   const alertSources = useAlertSources()
-  const isAdmin = useIsOrgAdmin()
 
   function renderList() {
     if (alertSources.isPending) {
@@ -40,7 +38,7 @@ export function AlertSourcesPage() {
         />
       )
     }
-    return <AlertSourceTable alertSources={alertSources.data} canManage={isAdmin} />
+    return <AlertSourceTable alertSources={alertSources.data} />
   }
 
   return (
@@ -48,7 +46,7 @@ export function AlertSourcesPage() {
       <PageHeader
         title="Alert sources"
         description="Where your alerts come from: a Grafana instance or an Alertmanager, each with its own webhook token."
-        actions={isAdmin && <AddAlertSourceDialog />}
+        actions={<AddAlertSourceDialog />}
       />
       {renderList()}
     </>

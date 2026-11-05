@@ -1,7 +1,7 @@
 # Frontend context
 
 > Living document for `argus-sre-frontend/`: decisions, status, and what the backend does or doesn't give us.
-> Last updated: 2026-10-30
+> Last updated: 2026-11-05
 > How code is written here: `CLAUDE.md`. The whole project: `../CONTEXT.md`. API contract: `../argus-sre-backend/src/Usage.md`. Source for the docs pages: `../USER-GUIDE.md`.
 
 ---
@@ -31,6 +31,7 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | Lists | Filters in the URL search params (`?status=OPEN&cluster=…`), replace, not push | Back from an incident, or a shared link, keeps them |
 | RCA rendering | `react-markdown` 10 (user OK, 2026-10-30), no `remark-gfm`, no raw HTML (its default: the report is model output built from untrusted alerts; `javascript:` links stripped). Elements styled through its `components` map with theme tokens, no typography plugin; report headings start at h3 | The agent's prompt asks for `##` sections, bullets, inline code and command blocks only, nothing GFM. A prompt that adds tables needs `remark-gfm` |
 | Dev port | 3000 (`strictPort`) | The backend's CORS allows `FRONTEND_URL=http://localhost:3000` |
+| Admin-only actions | **Shown to everyone; a member who clicks one gets a small dialog saying it requires admin privileges** (user, 2026-11-05; they were hidden). `AdminRequiredDialog`; the Add dialogs and row menus check `useIsOrgAdmin` themselves, so pages and tables know nothing about roles. Resolve and Investigate are open to members | A member can see what exists and why they can't use it. The backend still checks |
 | Hosting | Vercel; `vercel.json` rewrites every path to `index.html` (2026-10-29) | Without it a refresh on `/sign-in`, `/incidents/…` gave Vercel's 404. Production uses Clerk's production instance (`pk_live_…`) on the user's domain; the backend's `FRONTEND_URL` must be that domain |
 
 **Status → colour (Traffic light).** In code so far: incident and alert status, unknown cluster, test, runner never connected, alert source never received / no clusters, investigation status. The rest is decided, added to `lib/status.ts` when first shown.
@@ -57,6 +58,26 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | 6 | Incident page, in four parts: **6a** ✅ 2026-10-29 route `/incidents/:incidentId` (list titles link to it), summary, alerts table; **6b** ✅ 2026-10-29 Resolve (open incidents only; the response replaces the cached incident, lists marked stale); **6c** ✅ 2026-10-30 an "Investigation" section: the newest run (status, started, finished, model + effort; the error when failed), polled every 15s while `running` (runs take ~10–30s) and not after an error until Retry; Investigate / Investigate again, hidden for test and unknown-cluster incidents (the backend's 409s, the reason shown instead), disabled while a run is going; after a start, or any start error (`INVESTIGATION_RUNNING` = an automatic run got there first), the runs are refetched; **6d** ✅ 2026-10-30 the done run's report (`RcaReport`) under the run summary; with more than one run, a picker ("Run 3 · Done · 2 hours ago", user's idea) next to the button, newest by default and again after Investigate is pressed; **6e** ✅ 2026-10-30 alert details (user's idea): a chevron on each alert row opens an extra row with every label (`key=value` badges), every annotation (http(s) values as links, e.g. `runbook_url`), when it ended (set only on resolve) and the fingerprint; each row opens on its own, all start closed | ✅ 2026-10-30 |
 | 7 | Clusters and alert sources: **C1** ✅ 2026-10-29 Clusters page (read-only, sidebar entry); **C2** ✅ 2026-10-29 add cluster (name checked in the browser with the backend's DNS-1123 rule), runner token shown once with Copy, an outside click can't close it; **C3** ✅ 2026-10-30 a row menu (admins only) with Rotate token (confirm, then the new token shown once, like C2) and Delete (confirm, says what happens; refreshes clusters and every incidents query); **S1** ✅ 2026-10-30 Alert sources page (read-only, sidebar entry): name, clusters, last alert, added; **S2** ✅ 2026-10-30 add (name, cluster checkboxes, cluster label under a collapsed "Advanced"; "Add" stays disabled until a cluster is ticked), then the webhook URL (`VITE_API_URL` + `/webhooks/v1/alerts`) and token shown once with Copy, like C2; **S3** ✅ 2026-10-30 a row menu (admins only): Edit (name, clusters, cluster label, prefilled from the current values; "Advanced" opens by itself for a non-default label), Rotate token (confirm, then URL + new token once), Delete (confirm). Edit and delete also refresh incidents (an alert shows its source's name, or "Deleted source"). Admin-only actions hidden for members (`useIsOrgAdmin`, Clerk's `orgRole`; the backend still checks) | ✅ 2026-10-30 |
 
+**Next (user, 2026-11-05).** Item 1 is built, items 2 and 3 aren't. Explain the sub-steps and wait for the go-ahead before writing code (`../CONTEXT.md` §5.9 working agreements); the user does the commits.
+
+The `mcp_server` migration is applied (user, 2026-11-05). The backend is pushed at `ac6f3a0`.
+
+1. **Admin-only actions, shown rather than hidden.** ✅ Built 2026-11-05 on Clusters and Alert sources (§2), including the row menus: a member can open a menu and see its items, and clicking one shows the message. New admin actions follow the same pattern: `if (!isAdmin) return <AdminRequiredDialog trigger={trigger} />` in an Add dialog, or `open={isAdmin && dialog === 'x'}` plus `<AdminRequiredDialog open={!isAdmin && dialog !== null} … />` in a row menu. Checked with a one-off page (not kept): the real pages and dialogs in headless Chrome with Clerk stubbed, as member and admin, every action on both pages, and no requests from a member. Not checked with a real member account.
+2. **MCP servers page.** API: `../argus-sre-backend/src/Usage.md` "MCP servers". Design: `../CONTEXT.md` §4.7. Follow `features/alert-sources/`, in a new `features/mcp-servers/`:
+   - `src/types/mcp-server.ts`, `api.ts`, `hooks.ts`; a table (name, URL, added); empty state; sidebar and router entries next to Alert sources.
+   - **Add:** name, URL, token. Name rule: up to 20 lowercase letters, numbers or hyphens. The form says to use a read-only token, because Argus can use every tool the server exposes and runs start on their own from alerts. No "shown once" view, since the customer supplies the token.
+   - **Edit:** the token starts blank, meaning keep the current one, and an unchanged URL isn't a change. If the URL changes, the token is required (`400 MCP_TOKEN_REQUIRED`, which the backend enforces anyway).
+   - **Delete:** a confirmation. This is the third feature with these dialogs, so §6's shared confirm dialog is due.
+   - **Errors to show on the form:** `400 INVALID_MCP_URL` (its message says what's wrong), `409 MCP_SERVER_NAME_TAKEN`, `404 MCP_SERVER_NOT_FOUND`.
+   - The API never returns the token. Agent runs don't use these servers yet, so saving one changes nothing until `../CONTEXT.md` §4.7 step 3.
+3. **Slack settings, on the Settings page** (the install callback redirects there). There's no Slack code in the frontend yet. `Usage.md` has no Slack section either, so add one as part of this work. From the backend's `slack.controller.ts` and `slackModel.ts`:
+   - `GET /organizations/:organizationId/slack` (members): `{ connected: false }` or `{ connected: true, teamName, channelName, installedAt }`.
+   - `POST …/slack/install` (admins): `{ url }`. Send the browser there; Slack's consent page picks the channel.
+   - The browser comes back to `/settings?slack=<outcome>`, one of `connected`, `cancelled`, `cannot_post` (saved, but the test message failed), `workspace_taken` (connected to another org), `error`. Show a message for each, refresh the status, and clear the param.
+   - `DELETE …/slack` (admins): `{ connected: false }`, or `404 SLACK_NOT_CONNECTED`. Needs a confirmation.
+   - Known gap: uninstalling from Slack's side isn't handled yet (`../CONTEXT.md` §8), so the page can still say connected after that.
+   - The redirect goes to the backend's `FRONTEND_URL`, so testing from `localhost:3000` against staging needs staging's `FRONTEND_URL` set to it (§5).
+
 **Later** (recorded 2026-10-30, none started).
 
 Ready now (the backend already has what they need):
@@ -66,9 +87,9 @@ Ready now (the backend already has what they need):
 - A **"page not found"** page, **route-level code splitting** (or lazy `RcaReport` alone), a real **favicon** (all in §6).
 
 Waiting on the backend or the agent service:
-- **Investigation on/off switch and trigger rules** (the backend's next item, `../CONTEXT.md` §4.4): a Settings UI for admins, the switch plus rules as lists of `{label, op, value}` conditions.
+- **Investigation on/off switch and trigger rules** (`../CONTEXT.md` §4.4; was the backend's next item, not placed in the 2026-10-30 order, §4.5): a Settings UI for admins, the switch plus rules as lists of `{label, op, value}` conditions.
 - **Investigation effort as an org setting**, lite / balanced / max, and the model no longer shown on a run (user, 2026-10-30; needs the backend and the agent service first; today the run summary shows `model (effort)`).
-- **Chat** on an investigation (the agent service's step 8; streamed over SSE from the backend).
+- **Conversations** (chat; replaced "chat on an investigation" 2026-10-30, `../CONTEXT.md` §4.5): Slack comes first, the web chat UI after. A web conversation is seen only by the person chatting.
 
 Suggested order for the ready ones (not decided): browser check → grouping window → transcript → not-found page and code splitting.
 
@@ -84,7 +105,7 @@ src/
                       AppSidebar (nav list: add one entry per page), queryClient.ts, useOrgId.ts, useIsOrgAdmin.ts
   components/ui/      shadcn, generated (badge has the warning/info/success variants). `npx shadcn add` asks before
                       overwriting an existing file and stops when it can't ask: run it from Bash as `yes n | npx shadcn@latest add …`
-  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle, RelativeTime, CopyField
+  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle, RelativeTime, CopyField, AdminRequiredDialog
   hooks/use-mobile.ts shadcn, generated (components.json's `hooks` alias)
   features/
     incidents/        api, hooks, IncidentFilterBar, IncidentTable, IncidentsPage (list);
@@ -105,7 +126,7 @@ src/
 
 ## 5. Dev setup
 
-- `.env.local` (gitignored): `VITE_API_URL` (the backend's origin, without `/api/v1`): `http://localhost:5000`, or staging `https://api.staging.argussre.com` (the user's setting since 2026-10-29; staging's `FRONTEND_URL` must then be `http://localhost:3000`); `VITE_CLERK_PUBLISHABLE_KEY` (`pk_test_…`, the development instance). `.env.example` lists both. Only `VITE_`-prefixed variables reach the browser, and Vite builds them in, so a change on Vercel needs a redeploy.
+- `.env.local` (gitignored): `VITE_API_URL` (the backend's origin, without `/api/v1`): `http://localhost:5000`, or staging `https://staging.api.argussre.com` (staging's `FRONTEND_URL` must then be `http://localhost:3000`); `VITE_CLERK_PUBLISHABLE_KEY` (`pk_test_…`, the development instance). `.env.example` lists both. Only `VITE_`-prefixed variables reach the browser, and Vite builds them in, so a change on Vercel needs a redeploy.
 - `npm run dev` → http://localhost:3000. The backend (`npm run dev` in `../argus-sre-backend`, port 5000) must have `FRONTEND_URL=http://localhost:3000`.
 - Calling the API by hand: `Authorization: Bearer <await window.Clerk.session.getToken()>` from the browser console (expires in about a minute).
 

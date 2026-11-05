@@ -1,5 +1,7 @@
 import { Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { useIsOrgAdmin } from '@/app/useIsOrgAdmin'
+import { AdminRequiredDialog } from '@/components/common/AdminRequiredDialog'
 import { CopyField } from '@/components/common/CopyField'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +23,7 @@ import { useCreateAlertSource } from '@/features/alert-sources/hooks'
 import { ApiError } from '@/lib/api-client'
 
 export function AddAlertSourceDialog() {
+  const isAdmin = useIsOrgAdmin()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [clusterIds, setClusterIds] = useState<string[]>([])
@@ -44,14 +47,18 @@ export function AddAlertSourceDialog() {
     create.mutate({ name, clusterIds, clusterLabel })
   }
 
+  const trigger = (
+    <Button>
+      <Plus />
+      Add alert source
+    </Button>
+  )
+
+  if (!isAdmin) return <AdminRequiredDialog trigger={trigger} />
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus />
-          Add alert source
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
         // The token is never shown again, so a stray click outside must not close it.
         onInteractOutside={create.data ? (event) => event.preventDefault() : undefined}
