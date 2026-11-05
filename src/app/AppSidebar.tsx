@@ -1,5 +1,5 @@
 import { OrganizationSwitcher } from '@clerk/react'
-import { Server, Settings, Siren, Webhook } from 'lucide-react'
+import { Plug, Server, Settings, Siren, Webhook } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
 import {
   Sidebar,
@@ -17,6 +17,7 @@ const navItems = [
   { to: '/incidents', label: 'Incidents', icon: Siren },
   { to: '/clusters', label: 'Clusters', icon: Server },
   { to: '/alert-sources', label: 'Alert sources', icon: Webhook },
+  { to: '/mcp-servers', label: 'MCP servers', icon: Plug },
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
 

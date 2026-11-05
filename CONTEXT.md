@@ -58,18 +58,19 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | 6 | Incident page, in four parts: **6a** ✅ 2026-10-29 route `/incidents/:incidentId` (list titles link to it), summary, alerts table; **6b** ✅ 2026-10-29 Resolve (open incidents only; the response replaces the cached incident, lists marked stale); **6c** ✅ 2026-10-30 an "Investigation" section: the newest run (status, started, finished, model + effort; the error when failed), polled every 15s while `running` (runs take ~10–30s) and not after an error until Retry; Investigate / Investigate again, hidden for test and unknown-cluster incidents (the backend's 409s, the reason shown instead), disabled while a run is going; after a start, or any start error (`INVESTIGATION_RUNNING` = an automatic run got there first), the runs are refetched; **6d** ✅ 2026-10-30 the done run's report (`RcaReport`) under the run summary; with more than one run, a picker ("Run 3 · Done · 2 hours ago", user's idea) next to the button, newest by default and again after Investigate is pressed; **6e** ✅ 2026-10-30 alert details (user's idea): a chevron on each alert row opens an extra row with every label (`key=value` badges), every annotation (http(s) values as links, e.g. `runbook_url`), when it ended (set only on resolve) and the fingerprint; each row opens on its own, all start closed | ✅ 2026-10-30 |
 | 7 | Clusters and alert sources: **C1** ✅ 2026-10-29 Clusters page (read-only, sidebar entry); **C2** ✅ 2026-10-29 add cluster (name checked in the browser with the backend's DNS-1123 rule), runner token shown once with Copy, an outside click can't close it; **C3** ✅ 2026-10-30 a row menu (admins only) with Rotate token (confirm, then the new token shown once, like C2) and Delete (confirm, says what happens; refreshes clusters and every incidents query); **S1** ✅ 2026-10-30 Alert sources page (read-only, sidebar entry): name, clusters, last alert, added; **S2** ✅ 2026-10-30 add (name, cluster checkboxes, cluster label under a collapsed "Advanced"; "Add" stays disabled until a cluster is ticked), then the webhook URL (`VITE_API_URL` + `/webhooks/v1/alerts`) and token shown once with Copy, like C2; **S3** ✅ 2026-10-30 a row menu (admins only): Edit (name, clusters, cluster label, prefilled from the current values; "Advanced" opens by itself for a non-default label), Rotate token (confirm, then URL + new token once), Delete (confirm). Edit and delete also refresh incidents (an alert shows its source's name, or "Deleted source"). Admin-only actions hidden for members (`useIsOrgAdmin`, Clerk's `orgRole`; the backend still checks) | ✅ 2026-10-30 |
 
-**Next (user, 2026-11-05).** Item 1 is built, items 2 and 3 aren't. Explain the sub-steps and wait for the go-ahead before writing code (`../CONTEXT.md` §5.9 working agreements); the user does the commits.
+**Next (user, 2026-11-05).** Items 1 and 2 are built, item 3 isn't. Explain the sub-steps and wait for the go-ahead before writing code (`../CONTEXT.md` §5.9 working agreements); the user does the commits.
 
 The `mcp_server` migration is applied (user, 2026-11-05). The backend is pushed at `ac6f3a0`.
 
 1. **Admin-only actions, shown rather than hidden.** ✅ Built 2026-11-05 on Clusters and Alert sources (§2), including the row menus: a member can open a menu and see its items, and clicking one shows the message. New admin actions follow the same pattern: `if (!isAdmin) return <AdminRequiredDialog trigger={trigger} />` in an Add dialog, or `open={isAdmin && dialog === 'x'}` plus `<AdminRequiredDialog open={!isAdmin && dialog !== null} … />` in a row menu. Checked with a one-off page (not kept): the real pages and dialogs in headless Chrome with Clerk stubbed, as member and admin, every action on both pages, and no requests from a member. Not checked with a real member account.
-2. **MCP servers page.** API: `../argus-sre-backend/src/Usage.md` "MCP servers". Design: `../CONTEXT.md` §4.7. Follow `features/alert-sources/`, in a new `features/mcp-servers/`:
-   - `src/types/mcp-server.ts`, `api.ts`, `hooks.ts`; a table (name, URL, added); empty state; sidebar and router entries next to Alert sources.
-   - **Add:** name, URL, token. Name rule: up to 20 lowercase letters, numbers or hyphens. The form says to use a read-only token, because Argus can use every tool the server exposes and runs start on their own from alerts. No "shown once" view, since the customer supplies the token.
-   - **Edit:** the token starts blank, meaning keep the current one, and an unchanged URL isn't a change. If the URL changes, the token is required (`400 MCP_TOKEN_REQUIRED`, which the backend enforces anyway).
-   - **Delete:** a confirmation. This is the third feature with these dialogs, so §6's shared confirm dialog is due.
-   - **Errors to show on the form:** `400 INVALID_MCP_URL` (its message says what's wrong), `409 MCP_SERVER_NAME_TAKEN`, `404 MCP_SERVER_NOT_FOUND`.
-   - The API never returns the token. Agent runs don't use these servers yet, so saving one changes nothing until `../CONTEXT.md` §4.7 step 3.
+2. **MCP servers page.** ✅ Built 2026-11-05, in `features/mcp-servers/`, modelled on alert sources (API: `../argus-sre-backend/src/Usage.md` "MCP servers"; design: `../CONTEXT.md` §4.7). **Not yet called against the real backend**, whose routes have never been called over HTTP either: try add, edit and delete on staging. Agent runs don't use these servers yet, so saving one changes nothing until `../CONTEXT.md` §4.7 step 3, although the page says the agent can use their tools.
+   - Page at `/mcp-servers`, sidebar entry next to Alert sources: a table (name, URL, added; a long URL is cut off, the full value in its tooltip), empty state.
+   - **Add:** name, URL, token (a password field), with the read-only advice. No "shown once" view, since the customer supplies the token; it closes on success.
+   - **Edit:** always sends name and URL, the token only if typed. The token field becomes required while the URL differs from the saved one, and says why.
+   - **Delete:** the new shared `ConfirmDialog`, which the clusters' and alert sources' Delete dialogs now use too.
+   - **Errors:** name taken under Name, `INVALID_MCP_URL` under URL, `MCP_TOKEN_REQUIRED` under Token (reachable if someone else changed the URL meanwhile), anything else under the form. The browser stops a bad name or a token with spaces, because the backend's own answer to those is only "Request body validation failed". Spaces around a token are trimmed.
+   - Add and Edit scroll inside the dialog (`max-h-svh overflow-y-auto`): the form is about 590px tall, and `DialogContent` doesn't scroll by default.
+   - Checked with a one-off page (not kept): the real app (router, layouts, sidebar) in headless Chrome, Clerk stubbed, against a fake API that records requests: exact request bodies, each error's place, every field rule, the four states, member and admin, a 480px-tall window, and both moved Delete dialogs. Not checked: the real backend, a real member account.
 3. **Slack settings, on the Settings page** (the install callback redirects there). There's no Slack code in the frontend yet. `Usage.md` has no Slack section either, so add one as part of this work. From the backend's `slack.controller.ts` and `slackModel.ts`:
    - `GET /organizations/:organizationId/slack` (members): `{ connected: false }` or `{ connected: true, teamName, channelName, installedAt }`.
    - `POST …/slack/install` (admins): `{ url }`. Send the browser there; Slack's consent page picks the channel.
@@ -105,7 +106,8 @@ src/
                       AppSidebar (nav list: add one entry per page), queryClient.ts, useOrgId.ts, useIsOrgAdmin.ts
   components/ui/      shadcn, generated (badge has the warning/info/success variants). `npx shadcn add` asks before
                       overwriting an existing file and stops when it can't ask: run it from Bash as `yes n | npx shadcn@latest add …`
-  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle, RelativeTime, CopyField, AdminRequiredDialog
+  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle, RelativeTime, CopyField, AdminRequiredDialog,
+                      ConfirmDialog
   hooks/use-mobile.ts shadcn, generated (components.json's `hooks` alias)
   features/
     incidents/        api, hooks, IncidentFilterBar, IncidentTable, IncidentsPage (list);
@@ -117,9 +119,12 @@ src/
                       ClusterLabelField (form parts, shared by add and edit), AlertSourceActions (row menu),
                       EditAlertSourceDialog + EditAlertSourceForm, RotateAlertSourceTokenDialog, DeleteAlertSourceDialog,
                       AlertSourcesPage
+    mcp-servers/      api, hooks, McpServerTable, McpServerActions (row menu), McpServerFields (form parts, shared by add
+                      and edit), AddMcpServerDialog, EditMcpServerDialog + EditMcpServerForm, DeleteMcpServerDialog,
+                      McpServersPage
     settings/         api, hooks, SettingsPage (read-only)
   lib/                api-client.ts, status.ts, utils.ts (cn, formatRelativeTime)
-  types/              organization, incident, cluster, alert-source, investigation
+  types/              organization, incident, cluster, alert-source, investigation, mcp-server
 ```
 
 ---
@@ -143,10 +148,11 @@ src/
 
 **Ours:**
 - `ThemeToggle` keeps the theme on `<html>` + `localStorage` only; move it into a provider once another component must react to it (e.g. a toast library's `theme` prop).
-- Main bundle 777 KB (235 KB gzipped, 2026-10-30, +119 KB for `react-markdown` and its parser; 658 KB before it; 617 KB / 189 KB gzipped on 2026-10-29, 548 KB on 2026-10-28), over Vite's 500 KB warning, mostly Clerk's bundled UI. Route-level lazy loading later; lazy-loading `RcaReport` alone would take `react-markdown` out of the first load.
+- Main bundle 788 KB (237 KB gzipped, 2026-11-05; 777 KB / 235 KB on 2026-10-30, +119 KB for `react-markdown` and its parser; 658 KB before it; 617 KB / 189 KB gzipped on 2026-10-29, 548 KB on 2026-10-28), over Vite's 500 KB warning, mostly Clerk's bundled UI. Route-level lazy loading later; lazy-loading `RcaReport` alone would take `react-markdown` out of the first load.
 - Incident page: Resolve has no "are you sure" (offered, not asked for; a manual resolve can't be undone); no in-page back link (the sidebar, and the browser's Back, which keeps the list's filters); only the title in a list row is a link; a very long label value doesn't wrap (the `Badge` is `nowrap`), so the alerts table scrolls sideways (a side panel, the existing `Sheet`, if real alerts need it).
-- Rotate and Delete dialogs are near copies for clusters and alert sources (and the add dialogs' token view); a shared confirm dialog in `components/common/` once a third feature needs one.
-- Row menus (clusters, alert sources): `DropdownMenu modal={false}` (a modal menu opening a modal dialog can leave the page unclickable in Radix). Closing a dialog opened from it doesn't return focus to the menu button.
+- Delete dialogs share `ConfirmDialog` (2026-11-05). The Rotate dialogs are still near copies for clusters and alert sources (and the add dialogs' token view), because they go on to show a token; MCP servers have neither.
+- `ConfirmDialog` doesn't close itself on success: what it acts on leaves the page and takes the dialog with it (a deleted row). Anything that stays on the page needs it closed some other way.
+- Row menus (clusters, alert sources, MCP servers): `DropdownMenu modal={false}` (a modal menu opening a modal dialog can leave the page unclickable in Radix). Closing a dialog opened from it doesn't return focus to the menu button.
 - Add alert source: the cluster checklist doesn't scroll on its own (fine for a few clusters, the API allows 100); a cluster label made invalid and then hidden by closing "Advanced" isn't checked by the browser (the backend's 400 shows under the form).
 - Investigation section: the picker remembers a chosen older run until Investigate is pressed (an automatic run that starts meanwhile doesn't take over the view); a run stuck in `running` polls 60 requests / 15 min, over half the rate limit, until the page is left or the tab hidden; it fetches its own data (not passed down by the page) so the page stays short.
 - Unknown URLs show React Router's default error screen.
