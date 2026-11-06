@@ -1,9 +1,13 @@
-export type Organization = {
+export type OrganizationSettings = {
+  incidentGroupingWindowMinutes: number
+  autoInvestigateEnabled: boolean
+}
+
+export type Organization = OrganizationSettings & {
   id: string
   name: string
   slug: string
   imageUrl: string | null
-  incidentGroupingWindowMinutes: number
   createdAt: string
   memberCount: number
   currentUserRole: string

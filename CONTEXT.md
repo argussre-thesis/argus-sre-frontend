@@ -63,7 +63,7 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | 8 | Admin-only actions shown rather than hidden, on every page with them (§2). Reported working by the user | ✅ 2026-11-05 |
 | 9 | MCP servers: table, add, edit, delete, in `features/mcp-servers/`, modelled on alert sources. Reported working by the user. The page itself is now Integrations (step 11) | ✅ 2026-11-05 |
 | 10 | Slack settings on the Settings page, in `features/settings/`. Reported working by the user | ✅ 2026-11-05 |
-| 11 | Integrations page (design: `../CONTEXT.md` §4.7): `/integrations` replaces `/mcp-servers`. Kubernetes, Grafana, GitHub and Custom MCP cards above the saved servers table, with a count per card and logos on the rows (matched by hostname). `AddClusterDialog` moved to `components/common/`. `features/mcp-servers/` kept its name. `VITE_GRAFANA_MCP_HOST` is set on Vercel (user, 2026-11-06). Not yet reported tried; see "To finish" below | Built 2026-11-06 (`3f65e18`) |
+| 11 | Integrations page (design: `../CONTEXT.md` §4.7): `/integrations` replaces `/mcp-servers`. Kubernetes, Grafana, GitHub and Custom MCP cards above the saved servers table, with a count per card and logos on the rows (matched by hostname). `AddClusterDialog` moved to `components/common/`. `features/mcp-servers/` kept its name. `VITE_GRAFANA_MCP_HOST` is set on Vercel (user, 2026-11-06). Reported working by the user; what is left is under "Left from the Integrations page" below | ✅ 2026-11-06 |
 
 **How these work (notes from steps 8–10).**
 
@@ -86,8 +86,7 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 
 **Later** (recorded 2026-10-30, none started).
 
-To finish (Integrations page, 2026-11-06):
-- **Try it for real:** add a Grafana and a GitHub server through the cards, in dark and light mode. Only the URL logic has been run so far.
+Left from the Integrations page (2026-11-06):
 - **Confirm the token hints:** a Viewer-role Grafana token, and a fine-grained GitHub token.
 - **Ideas, not decided:** a Datadog card (the logo is in `src/assets/logos/`), install instructions in the Add cluster token step (user: later), a redirect from the old `/mcp-servers`.
 

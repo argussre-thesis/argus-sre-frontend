@@ -1,9 +1,16 @@
 import { apiRequest } from '@/lib/api-client'
-import type { Organization } from '@/types/organization'
+import type { Organization, OrganizationSettings } from '@/types/organization'
 import type { SlackStatus } from '@/types/slack'
 
 export function getOrganization(orgId: string) {
   return apiRequest<Organization>(`/organizations/${encodeURIComponent(orgId)}`)
+}
+
+export function updateOrganizationSettings(orgId: string, settings: OrganizationSettings) {
+  return apiRequest<OrganizationSettings>(
+    `/organizations/${encodeURIComponent(orgId)}/settings`,
+    { method: 'PATCH', body: settings },
+  )
 }
 
 function slackPath(orgId: string) {
