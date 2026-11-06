@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { useIsOrgAdmin } from '@/app/useIsOrgAdmin'
 import { AdminRequiredDialog } from '@/components/common/AdminRequiredDialog'
 import { CopyField } from '@/components/common/CopyField'
@@ -18,7 +18,18 @@ import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui
 import { Input } from '@/components/ui/input'
 import { useCreateCluster } from '@/features/clusters/hooks'
 
-export function AddClusterDialog() {
+type Props = {
+  trigger?: ReactNode
+}
+
+export function AddClusterDialog({
+  trigger = (
+    <Button>
+      <Plus />
+      Add cluster
+    </Button>
+  ),
+}: Props) {
   const isAdmin = useIsOrgAdmin()
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
@@ -36,13 +47,6 @@ export function AddClusterDialog() {
     event.preventDefault()
     create.mutate(name)
   }
-
-  const trigger = (
-    <Button>
-      <Plus />
-      Add cluster
-    </Button>
-  )
 
   if (!isAdmin) return <AdminRequiredDialog trigger={trigger} />
 

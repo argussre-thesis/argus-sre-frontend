@@ -1,5 +1,4 @@
-import { Plus } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { useIsOrgAdmin } from '@/app/useIsOrgAdmin'
 import { AdminRequiredDialog } from '@/components/common/AdminRequiredDialog'
 import { Button } from '@/components/ui/button'
@@ -18,7 +17,11 @@ import { useCreateMcpServer } from '@/features/mcp-servers/hooks'
 
 const emptyValues = { name: '', url: '', token: '' }
 
-export function AddMcpServerDialog() {
+type Props = {
+  trigger: ReactNode
+}
+
+export function AddMcpServerDialog({ trigger }: Props) {
   const isAdmin = useIsOrgAdmin()
   const [open, setOpen] = useState(false)
   const [values, setValues] = useState(emptyValues)
@@ -39,13 +42,6 @@ export function AddMcpServerDialog() {
       { onSuccess: () => handleOpenChange(false) },
     )
   }
-
-  const trigger = (
-    <Button>
-      <Plus />
-      Add MCP server
-    </Button>
-  )
 
   if (!isAdmin) return <AdminRequiredDialog trigger={trigger} />
 

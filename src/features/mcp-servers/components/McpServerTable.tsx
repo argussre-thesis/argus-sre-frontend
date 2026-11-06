@@ -7,7 +7,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { IntegrationIcon } from '@/features/mcp-servers/components/IntegrationIcon'
 import { McpServerActions } from '@/features/mcp-servers/components/McpServerActions'
+import { integrationKind } from '@/features/mcp-servers/integrations'
 import type { McpServer } from '@/types/mcp-server'
 
 type Props = {
@@ -31,7 +33,12 @@ export function McpServerTable({ mcpServers }: Props) {
         <TableBody>
           {mcpServers.map((server) => (
             <TableRow key={server.id}>
-              <TableCell className="font-medium">{server.name}</TableCell>
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
+                  <IntegrationIcon kind={integrationKind(server.url)} />
+                  {server.name}
+                </div>
+              </TableCell>
               <TableCell className="max-w-96 truncate text-muted-foreground" title={server.url}>
                 {server.url}
               </TableCell>

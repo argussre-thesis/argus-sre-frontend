@@ -17,7 +17,7 @@ const navItems = [
   { to: '/incidents', label: 'Incidents', icon: Siren },
   { to: '/clusters', label: 'Clusters', icon: Server },
   { to: '/alert-sources', label: 'Alert sources', icon: Webhook },
-  { to: '/mcp-servers', label: 'MCP servers', icon: Plug },
+  { to: '/integrations', label: 'Integrations', icon: Plug },
   { to: '/settings', label: 'Settings', icon: Settings },
 ]
 
