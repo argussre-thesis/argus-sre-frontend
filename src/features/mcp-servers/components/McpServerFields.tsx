@@ -1,24 +1,36 @@
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { McpServerHeadersField } from '@/features/mcp-servers/components/McpServerHeadersField'
 import { McpServerNameField } from '@/features/mcp-servers/components/McpServerNameField'
 import { McpServerTokenField } from '@/features/mcp-servers/components/McpServerTokenField'
 import { mcpServerErrors } from '@/features/mcp-servers/mcpServerErrors'
-import type { CreateMcpServerInput } from '@/types/mcp-server'
+import type { McpServerFormValues } from '@/features/mcp-servers/mcpServerHeaders'
 
 type Props = {
-  values: CreateMcpServerInput
-  onChange: (values: CreateMcpServerInput) => void
+  values: McpServerFormValues
+  onChange: (values: McpServerFormValues) => void
   error: Error | null
+  headersError: string | undefined
   tokenRequired: boolean
   tokenDescription: string
+  headersDescription: string
 }
 
 export function McpServerFields({
   values,
   onChange,
   error,
+  headersError,
   tokenRequired,
   tokenDescription,
+  headersDescription,
 }: Props) {
   const { nameError, urlError, tokenError, otherError } = mcpServerErrors(error)
 
@@ -45,13 +57,39 @@ export function McpServerFields({
         <FieldDescription>The server's https address, reachable from the internet.</FieldDescription>
         <FieldError>{urlError}</FieldError>
       </Field>
-      <McpServerTokenField
-        value={values.token}
-        onChange={(token) => onChange({ ...values, token })}
-        error={tokenError}
-        required={tokenRequired}
-        description={tokenDescription}
-      />
+      <Field>
+        <FieldLabel htmlFor="mcp-server-auth">Authentication</FieldLabel>
+        <Select
+          value={values.authMode}
+          onValueChange={(authMode: McpServerFormValues['authMode']) =>
+            onChange({ ...values, authMode })
+          }
+        >
+          <SelectTrigger id="mcp-server-auth" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="token">Bearer token</SelectItem>
+            <SelectItem value="headers">Custom headers</SelectItem>
+          </SelectContent>
+        </Select>
+      </Field>
+      {values.authMode === 'token' ? (
+        <McpServerTokenField
+          value={values.token}
+          onChange={(token) => onChange({ ...values, token })}
+          error={tokenError}
+          required={tokenRequired}
+          description={tokenDescription}
+        />
+      ) : (
+        <McpServerHeadersField
+          rows={values.headerRows}
+          onChange={(headerRows) => onChange({ ...values, headerRows })}
+          error={headersError ?? tokenError}
+          description={headersDescription}
+        />
+      )}
       <FieldError>{otherError}</FieldError>
     </>
   )

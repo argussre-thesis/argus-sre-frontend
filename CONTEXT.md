@@ -64,6 +64,7 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | 9 | MCP servers: table, add, edit, delete, in `features/mcp-servers/`, modelled on alert sources. Reported working by the user. The page itself is now Integrations (step 11) | ✅ 2026-11-05 |
 | 10 | Slack settings on the Settings page, in `features/settings/`. Reported working by the user | ✅ 2026-11-05 |
 | 11 | Integrations page (design: `../CONTEXT.md` §4.7): `/integrations` replaces `/mcp-servers`. Kubernetes, Grafana, GitHub and Custom MCP cards above the saved servers table, with a count per card and logos on the rows (matched by hostname). `AddClusterDialog` moved to `components/common/`. `features/mcp-servers/` kept its name. `VITE_GRAFANA_MCP_HOST` is set on Vercel (user, 2026-11-06). Reported working by the user; what is left is under "Left from the Integrations page" below | ✅ 2026-11-06 |
+| 12 | Org settings on the Settings page: grouping window (0–1440) and "Investigate automatically" switch in one form, `OrganizationSettingsForm`, saved together because `PATCH …/settings` requires both. Save is disabled until something changes. Members see disabled fields, and Save shows the admin message. Adds shadcn's `Switch`. Reported working by the user | ✅ 2026-11-06 |
 
 **How these work (notes from steps 8–10).**
 
@@ -96,15 +97,14 @@ To look into (user, 2026-11-05):
 Ready now (the backend already has what they need):
 - **Browser check** of the steps not yet checked (see below), before building more on them.
 - **Transcript** of a run, from `GET …/investigations/:investigationId/messages` (built): first read-only under the report, then evidence links from the RCA's citations (`` `list_pods {"namespace":"demo"}` ``, matched to a tool call by name + args, as the agent service's `src/citations.ts` does). Skip OpenAI's encrypted reasoning (§6); Claude's `thinking` blocks: show or hide, not decided.
-- **Editing the grouping window** (admins) on Settings: `PATCH /organizations/:organizationId/settings {incidentGroupingWindowMinutes}`, 0–1440.
 - A **"page not found"** page, **route-level code splitting** (or lazy `RcaReport` alone), a real **favicon** (all in §6).
 
 Waiting on the backend or the agent service:
-- **Investigation on/off switch and trigger rules** (`../CONTEXT.md` §4.4; was the backend's next item, not placed in the 2026-10-30 order, §4.5): a Settings UI for admins, the switch plus rules as lists of `{label, op, value}` conditions.
+- **Investigation trigger rules** (`../CONTEXT.md` §4.4; not placed in the 2026-10-30 order, §4.5): a Settings UI for admins, rules as lists of `{label, op, value}` conditions.
 - **Investigation effort as an org setting**, lite / balanced / max, and the model no longer shown on a run (user, 2026-10-30; needs the backend and the agent service first; today the run summary shows `model (effort)`).
 - **Conversations** (chat; replaced "chat on an investigation" 2026-10-30, `../CONTEXT.md` §4.5): Slack comes first, the web chat UI after. A web conversation is seen only by the person chatting.
 
-Suggested order for the ready ones (not decided): browser check → grouping window → transcript → not-found page and code splitting.
+Suggested order for the ready ones (not decided): browser check → transcript → not-found page and code splitting.
 
 Checked by the user in the browser (2026-10-28): sign-in, the org gate and the shell (the theme preview was inside it). Each step: `npm run typecheck`, `npm run lint`, a build. No test runner yet; new logic was checked with one-off scripts that load the real files through Vite (not kept): `api-client` (every response shape, against a fake server and the real backend's 401), `formatRelativeTime` (11 cases), `listIncidents`' query string, the cluster-name `pattern` compiled with the `v` flag browsers use (11 names), the cluster-label `pattern` the same way (9 names), `RcaReport` rendered through Vite's SSR loader (headings, lists, code, bold; `<script>` not rendered, a `javascript:` link stripped, external links get `target=_blank rel=noreferrer`, no `node` attribute), `AlertDetails` the same way (label badges, a `runbook_url` link, a `javascript:` value shown as text and not linked, empty parts hidden), the investigations polling rule against TanStack's `QueryObserver` with a fake API (running → done stops; done never polls; an error stops it with stale "running" data; a refetch resumes it), `integrations.ts` (15 addresses, hostile ones included, plus how a saved URL maps to a card) (2026-11-06). Steps 6a, 6b, C1, C2 (2026-10-29) and C3, S1, S2, S3, 6c, 6d, 6e (2026-10-30) are not checked in the browser yet. Adding Vitest needs the user's OK.
 
@@ -136,7 +136,7 @@ src/
                       (form parts), AddMcpServerDialog, AddGrafanaDialog, AddGitHubDialog, EditMcpServerDialog +
                       EditMcpServerForm, DeleteMcpServerDialog, IntegrationCards + IntegrationCard + IntegrationCardButton,
                       IntegrationIcon, IntegrationsPage
-    settings/         api, hooks, SettingsPage; SlackSection (fetches its own status) + AddToSlackButton,
+    settings/         api, hooks, SettingsPage; OrganizationSettingsForm; SlackSection (fetches its own status) + AddToSlackButton,
                       SlackConnectionDetails, SlackOutcomeAlert
   assets/logos/       kubernetes, grafana, github, datadog (SVG)
   lib/                api-client.ts, status.ts, utils.ts (cn, formatRelativeTime)

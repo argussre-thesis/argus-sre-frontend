@@ -24,6 +24,7 @@ export function McpServerTable({ mcpServers }: Props) {
           <TableRow>
             <TableHead>MCP server</TableHead>
             <TableHead>URL</TableHead>
+            <TableHead>Credentials</TableHead>
             <TableHead>Added</TableHead>
             <TableHead>
               <span className="sr-only">Actions</span>
@@ -41,6 +42,9 @@ export function McpServerTable({ mcpServers }: Props) {
               </TableCell>
               <TableCell className="max-w-96 truncate text-muted-foreground" title={server.url}>
                 {server.url}
+              </TableCell>
+              <TableCell className="max-w-48 truncate text-muted-foreground">
+                {server.headerNames.join(', ') || 'Bearer token'}
               </TableCell>
               <TableCell className="text-muted-foreground">
                 <RelativeTime iso={server.createdAt} />
