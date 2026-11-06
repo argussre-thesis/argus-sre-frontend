@@ -1,7 +1,7 @@
 # Frontend context
 
 > Living document for `argus-sre-frontend/`: decisions, status, and what the backend does or doesn't give us.
-> Last updated: 2026-11-05
+> Last updated: 2026-11-06
 > How code is written here: `CLAUDE.md`. The whole project: `../CONTEXT.md`. API contract: `../argus-sre-backend/src/Usage.md`. Source for the docs pages: `../USER-GUIDE.md`.
 
 ---
@@ -33,6 +33,8 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | Dev port | 3000 (`strictPort`) | The backend's CORS allows `FRONTEND_URL=http://localhost:3000` |
 | Admin-only actions | **Shown to everyone; a member who clicks one gets a small dialog saying it requires admin privileges** (user, 2026-11-05; they were hidden). `AdminRequiredDialog`; the Add dialogs and row menus check `useIsOrgAdmin` themselves, so pages and tables know nothing about roles. Resolve and Investigate are open to members | A member can see what exists and why they can't use it. The backend still checks |
 | Add to Slack button | Slack's own image from its CDN (user, 2026-11-05), inside a real `Button`. An exception to "lucide only" and "theme tokens only", in this one place | Lucide has no Slack icon any more, and an image needs no hex colours in our code. Slack's docs page for the button (marked legacy) states no usage rules either way |
+| Integration logos | SVG files in `src/assets/logos/`, shown with `<img>` (user, 2026-11-06). An exception to "lucide only" and "theme tokens only", for these logos | Lucide has no such logos. GitHub's is near-black, so it gets `dark:invert` |
+| Hosted Grafana address | `VITE_GRAFANA_MCP_HOST`, read in `features/mcp-servers/integrations.ts`. If unset, the Grafana dialog shows an inline error and the app still loads, unlike `VITE_API_URL`, which stops it at startup | One integration's setting shouldn't take the whole app down |
 | Hosting | Vercel; `vercel.json` rewrites every path to `index.html` (2026-10-29) | Without it a refresh on `/sign-in`, `/incidents/…` gave Vercel's 404. Production uses Clerk's production instance (`pk_live_…`) on the user's domain; the backend's `FRONTEND_URL` must be that domain |
 
 **Status → colour (Traffic light).** In code so far: incident and alert status, unknown cluster, test, runner never connected, alert source never received / no clusters, investigation status. The rest is decided, added to `lib/status.ts` when first shown.
@@ -58,36 +60,36 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | 5 | Incidents list: status and cluster filters, cursor paging ("Load more"), `StatusBadge`, `EmptyState`, relative times; the home page | ✅ 2026-10-28 |
 | 6 | Incident page, in four parts: **6a** ✅ 2026-10-29 route `/incidents/:incidentId` (list titles link to it), summary, alerts table; **6b** ✅ 2026-10-29 Resolve (open incidents only; the response replaces the cached incident, lists marked stale); **6c** ✅ 2026-10-30 an "Investigation" section: the newest run (status, started, finished, model + effort; the error when failed), polled every 15s while `running` (runs take ~10–30s) and not after an error until Retry; Investigate / Investigate again, hidden for test and unknown-cluster incidents (the backend's 409s, the reason shown instead), disabled while a run is going; after a start, or any start error (`INVESTIGATION_RUNNING` = an automatic run got there first), the runs are refetched; **6d** ✅ 2026-10-30 the done run's report (`RcaReport`) under the run summary; with more than one run, a picker ("Run 3 · Done · 2 hours ago", user's idea) next to the button, newest by default and again after Investigate is pressed; **6e** ✅ 2026-10-30 alert details (user's idea): a chevron on each alert row opens an extra row with every label (`key=value` badges), every annotation (http(s) values as links, e.g. `runbook_url`), when it ended (set only on resolve) and the fingerprint; each row opens on its own, all start closed | ✅ 2026-10-30 |
 | 7 | Clusters and alert sources: **C1** ✅ 2026-10-29 Clusters page (read-only, sidebar entry); **C2** ✅ 2026-10-29 add cluster (name checked in the browser with the backend's DNS-1123 rule), runner token shown once with Copy, an outside click can't close it; **C3** ✅ 2026-10-30 a row menu (admins only) with Rotate token (confirm, then the new token shown once, like C2) and Delete (confirm, says what happens; refreshes clusters and every incidents query); **S1** ✅ 2026-10-30 Alert sources page (read-only, sidebar entry): name, clusters, last alert, added; **S2** ✅ 2026-10-30 add (name, cluster checkboxes, cluster label under a collapsed "Advanced"; "Add" stays disabled until a cluster is ticked), then the webhook URL (`VITE_API_URL` + `/webhooks/v1/alerts`) and token shown once with Copy, like C2; **S3** ✅ 2026-10-30 a row menu (admins only): Edit (name, clusters, cluster label, prefilled from the current values; "Advanced" opens by itself for a non-default label), Rotate token (confirm, then URL + new token once), Delete (confirm). Edit and delete also refresh incidents (an alert shows its source's name, or "Deleted source"). Admin-only actions hidden for members (`useIsOrgAdmin`, Clerk's `orgRole`; the backend still checks) | ✅ 2026-10-30 |
+| 8 | Admin-only actions shown rather than hidden, on every page with them (§2). Reported working by the user | ✅ 2026-11-05 |
+| 9 | MCP servers: table, add, edit, delete, in `features/mcp-servers/`, modelled on alert sources. Reported working by the user. The page itself is now Integrations (step 11) | ✅ 2026-11-05 |
+| 10 | Slack settings on the Settings page, in `features/settings/`. Reported working by the user | ✅ 2026-11-05 |
+| 11 | Integrations page (design: `../CONTEXT.md` §4.7): `/integrations` replaces `/mcp-servers`. Kubernetes, Grafana, GitHub and Custom MCP cards above the saved servers table, with a count per card and logos on the rows (matched by hostname). `AddClusterDialog` moved to `components/common/`. `features/mcp-servers/` kept its name. `VITE_GRAFANA_MCP_HOST` is set on Vercel (user, 2026-11-06). Not yet reported tried; see "To finish" below | Built 2026-11-06 (`3f65e18`) |
 
-**Next (user, 2026-11-05).** All three items are built, and the user reported them working (2026-11-05). Next on the project's list is the agent service part of MCP servers (`../CONTEXT.md` §4.7 step 3). Explain the sub-steps and wait for the go-ahead before writing code (`../CONTEXT.md` §5.9 working agreements); the user does the commits.
+**How these work (notes from steps 8–10).**
 
-The `mcp_server` migration is applied (user, 2026-11-05). The backend is pushed at `ac6f3a0`.
-
-1. **Admin-only actions, shown rather than hidden.** ✅ Built 2026-11-05 on Clusters and Alert sources (§2), including the row menus: a member can open a menu and see its items, and clicking one shows the message. New admin actions follow the same pattern: `if (!isAdmin) return <AdminRequiredDialog trigger={trigger} />` in an Add dialog, or `open={isAdmin && dialog === 'x'}` plus `<AdminRequiredDialog open={!isAdmin && dialog !== null} … />` in a row menu. Checked with a one-off page (not kept): the real pages and dialogs in headless Chrome with Clerk stubbed, as member and admin, every action on both pages, and no requests from a member. Not checked with a real member account.
-2. **MCP servers page.** ✅ Built 2026-11-05, in `features/mcp-servers/`, modelled on alert sources (API: `../argus-sre-backend/src/Usage.md` "MCP servers"; design: `../CONTEXT.md` §4.7). The user tried it and reported it works well (2026-11-05). Agent runs don't use these servers yet, so saving one changes nothing until `../CONTEXT.md` §4.7 step 3, although the page says the agent can use their tools.
-   - Page at `/mcp-servers`, sidebar entry next to Alert sources: a table (name, URL, added; a long URL is cut off, the full value in its tooltip), empty state.
-   - **Add:** name, URL, token (a password field), with the read-only advice. No "shown once" view, since the customer supplies the token; it closes on success.
-   - **Edit:** always sends name and URL, the token only if typed. The token field becomes required while the URL differs from the saved one, and says why.
-   - **Delete:** the new shared `ConfirmDialog`, which the clusters' and alert sources' Delete dialogs now use too.
-   - **Errors:** name taken under Name, `INVALID_MCP_URL` under URL, `MCP_TOKEN_REQUIRED` under Token (reachable if someone else changed the URL meanwhile), anything else under the form. The browser stops a bad name or a token with spaces, because the backend's own answer to those is only "Request body validation failed". Spaces around a token are trimmed.
-   - Add and Edit scroll inside the dialog (`max-h-svh overflow-y-auto`): the form is about 590px tall, and `DialogContent` doesn't scroll by default.
-   - Checked with a one-off page (not kept): the real app (router, layouts, sidebar) in headless Chrome, Clerk stubbed, against a fake API that records requests: exact request bodies, each error's place, every field rule, the four states, member and admin, a 480px-tall window, and both moved Delete dialogs. Not confirmed separately: a real member account.
-3. **Slack settings, on the Settings page.** ✅ Built 2026-11-05 in `features/settings/`, from the backend's `slack.controller.ts` and `slackModel.ts`. The user tried it and reported it works (2026-11-05). `Usage.md` still has no Slack section (open: the session was frontend only). The API:
-   - `GET /organizations/:organizationId/slack` (members): `{ connected: false }` or `{ connected: true, teamName, channelName, installedAt }`. `channelName` is Slack's, with its `#`.
-   - `POST …/slack/install` (admins): `{ url }`, and the browser goes there. Slack's consent page picks the channel.
-   - The browser comes back to `/settings?slack=<outcome>`, one of `connected`, `cancelled`, `cannot_post` (saved, but the test message failed), `workspace_taken` (connected to another org), `error`.
-   - `DELETE …/slack` (admins): `{ connected: false }`, or `404 SLACK_NOT_CONNECTED`.
-
-   What the page does:
-   - **Not connected:** Slack's own Add to Slack button; a failed start shows under it with Retry.
-   - **Connected:** workspace, channel, when, a line about `/invite @argus` for private channels, and Disconnect through `ConfirmDialog`. The status is refreshed after a failed disconnect too, so a 404 (someone else already did it) just shows the Add button.
-   - **Coming back:** one message per outcome, kept in state while the param is removed from the URL, so a refresh doesn't repeat it. An unknown value shows nothing. Coming back is a full page load, so the status is fresh without any refresh code. "Slack connected" and the `cannot_post` message hide if the org is no longer connected (Disconnect pressed on the same page).
-   - **Members:** the admin message on both buttons; the `GET` allows them, so they see the status.
-   - Known gap: uninstalling from Slack's side isn't handled yet (`../CONTEXT.md` §8), so the page can still say connected after that.
-   - The redirect goes to the backend's `FRONTEND_URL`, so testing from `localhost:3000` against staging needs staging's `FRONTEND_URL` set to it (§5). Disconnect is real: it uninstalls the app from the workspace.
-   - Checked with a one-off page (not kept): the real app in headless Chrome, Clerk stubbed, a fake API, and a fake Slack page that redirects back: the round trip, each outcome, `bogus`, `constructor` and `__proto__`, disconnect with its failures, both roles, the states, and the real image loading from Slack's CDN.
+- **New admin actions** follow one pattern: `if (!isAdmin) return <AdminRequiredDialog trigger={trigger} />` in an Add dialog, or `open={isAdmin && dialog === 'x'}` plus `<AdminRequiredDialog open={!isAdmin && dialog !== null} … />` in a row menu.
+- **MCP server forms:**
+  - Add takes no "shown once" view, since the customer supplies the token; it closes on success.
+  - Edit always sends name and URL, the token only if typed. The token becomes required while the URL differs from the saved one, and the field says why.
+  - Errors: name taken under Name, `INVALID_MCP_URL` under URL, `MCP_TOKEN_REQUIRED` under Token, anything else under the form. The browser stops a bad name or a token with spaces, because the backend's own answer to those is only "Request body validation failed". Spaces around a token are trimmed.
+  - Add and Edit scroll inside the dialog (`max-h-svh overflow-y-auto`), because `DialogContent` doesn't scroll by default.
+- **Slack API** (`Usage.md` has no Slack section yet):
+  - `GET /organizations/:organizationId/slack` (members): `{ connected: false }` or `{ connected: true, teamName, channelName, installedAt }`. `channelName` is Slack's, with its `#`.
+  - `POST …/slack/install` (admins): `{ url }`, and the browser goes there. Slack's consent page picks the channel.
+  - The browser comes back to `/settings?slack=<outcome>`, one of `connected`, `cancelled`, `cannot_post` (saved, but the test message failed), `workspace_taken` (connected to another org), `error`.
+  - `DELETE …/slack` (admins): `{ connected: false }`, or `404 SLACK_NOT_CONNECTED`.
+- **Slack page behaviour:**
+  - Coming back shows one message per outcome, kept in state while the param is removed from the URL, so a refresh doesn't repeat it. An unknown value shows nothing. "Slack connected" and the `cannot_post` message hide if the org is no longer connected.
+  - The status is refreshed after a failed disconnect too, so a 404 (someone else already did it) just shows the Add button.
+  - Known gap: uninstalling from Slack's side isn't handled yet (`../CONTEXT.md` §8), so the page can still say connected after that.
+  - The redirect goes to the backend's `FRONTEND_URL`, so testing from `localhost:3000` against staging needs staging's `FRONTEND_URL` set to it (§5). Disconnect is real: it uninstalls the app from the workspace.
 
 **Later** (recorded 2026-10-30, none started).
+
+To finish (Integrations page, 2026-11-06):
+- **Try it for real:** add a Grafana and a GitHub server through the cards, in dark and light mode. Only the URL logic has been run so far.
+- **Confirm the token hints:** a Viewer-role Grafana token, and a fine-grained GitHub token.
+- **Ideas, not decided:** a Datadog card (the logo is in `src/assets/logos/`), install instructions in the Add cluster token step (user: later), a redirect from the old `/mcp-servers`.
 
 To look into (user, 2026-11-05):
 - **Accepting an organization invite doesn't lead to the frontend.** The person who accepts isn't sent to the app. The cause hasn't been looked into, so it's not known whether it's our code, the backend or Clerk's settings.
@@ -105,7 +107,7 @@ Waiting on the backend or the agent service:
 
 Suggested order for the ready ones (not decided): browser check → grouping window → transcript → not-found page and code splitting.
 
-Checked by the user in the browser (2026-10-28): sign-in, the org gate and the shell (the theme preview was inside it). Each step: `npm run typecheck`, `npm run lint`, a build. No test runner yet; new logic was checked with one-off scripts that load the real files through Vite (not kept): `api-client` (every response shape, against a fake server and the real backend's 401), `formatRelativeTime` (11 cases), `listIncidents`' query string, the cluster-name `pattern` compiled with the `v` flag browsers use (11 names), the cluster-label `pattern` the same way (9 names), `RcaReport` rendered through Vite's SSR loader (headings, lists, code, bold; `<script>` not rendered, a `javascript:` link stripped, external links get `target=_blank rel=noreferrer`, no `node` attribute), `AlertDetails` the same way (label badges, a `runbook_url` link, a `javascript:` value shown as text and not linked, empty parts hidden), the investigations polling rule against TanStack's `QueryObserver` with a fake API (running → done stops; done never polls; an error stops it with stale "running" data; a refetch resumes it). Steps 6a, 6b, C1, C2 (2026-10-29) and C3, S1, S2, S3, 6c, 6d, 6e (2026-10-30) are not checked in the browser yet. Adding Vitest needs the user's OK.
+Checked by the user in the browser (2026-10-28): sign-in, the org gate and the shell (the theme preview was inside it). Each step: `npm run typecheck`, `npm run lint`, a build. No test runner yet; new logic was checked with one-off scripts that load the real files through Vite (not kept): `api-client` (every response shape, against a fake server and the real backend's 401), `formatRelativeTime` (11 cases), `listIncidents`' query string, the cluster-name `pattern` compiled with the `v` flag browsers use (11 names), the cluster-label `pattern` the same way (9 names), `RcaReport` rendered through Vite's SSR loader (headings, lists, code, bold; `<script>` not rendered, a `javascript:` link stripped, external links get `target=_blank rel=noreferrer`, no `node` attribute), `AlertDetails` the same way (label badges, a `runbook_url` link, a `javascript:` value shown as text and not linked, empty parts hidden), the investigations polling rule against TanStack's `QueryObserver` with a fake API (running → done stops; done never polls; an error stops it with stale "running" data; a refetch resumes it), `integrations.ts` (15 addresses, hostile ones included, plus how a saved URL maps to a card) (2026-11-06). Steps 6a, 6b, C1, C2 (2026-10-29) and C3, S1, S2, S3, 6c, 6d, 6e (2026-10-30) are not checked in the browser yet. Adding Vitest needs the user's OK.
 
 ---
 
@@ -117,7 +119,7 @@ src/
                       AppSidebar (nav list: add one entry per page), queryClient.ts, useOrgId.ts, useIsOrgAdmin.ts
   components/ui/      shadcn, generated (badge has the warning/info/success variants). `npx shadcn add` asks before
                       overwriting an existing file and stops when it can't ask: run it from Bash as `yes n | npx shadcn@latest add …`
-  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle, RelativeTime, CopyField, AdminRequiredDialog,
+  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle, RelativeTime, CopyField, AdminRequiredDialog, AddClusterDialog,
                       ConfirmDialog
   hooks/use-mobile.ts shadcn, generated (components.json's `hooks` alias)
   features/
@@ -125,16 +127,19 @@ src/
                       IncidentSummary, IncidentInvestigation (section, fetches its own runs) + InvestigationPicker,
                       InvestigationSummary, RcaReport, AlertTable + AlertRow + AlertDetails, IncidentPage (one incident)
     clusters/         api, hooks (also used by the incidents filter), ClusterTable, ClusterActions (row menu),
-                      AddClusterDialog, RotateClusterTokenDialog, DeleteClusterDialog, ClustersPage
+                      RotateClusterTokenDialog, DeleteClusterDialog, ClustersPage
     alert-sources/    api (+ `webhookUrl`), hooks, AlertSourceTable, AddAlertSourceDialog, ClusterChecklist and
                       ClusterLabelField (form parts, shared by add and edit), AlertSourceActions (row menu),
                       EditAlertSourceDialog + EditAlertSourceForm, RotateAlertSourceTokenDialog, DeleteAlertSourceDialog,
                       AlertSourcesPage
-    mcp-servers/      api, hooks, McpServerTable, McpServerActions (row menu), McpServerFields (form parts, shared by add
-                      and edit), AddMcpServerDialog, EditMcpServerDialog + EditMcpServerForm, DeleteMcpServerDialog,
-                      McpServersPage
+    mcp-servers/      api, hooks, integrations.ts (Grafana address, which card a saved URL belongs to), mcpServerErrors.ts,
+                      McpServerTable, McpServerActions (row menu), McpServerFields + McpServerNameField + McpServerTokenField
+                      (form parts), AddMcpServerDialog, AddGrafanaDialog, AddGitHubDialog, EditMcpServerDialog +
+                      EditMcpServerForm, DeleteMcpServerDialog, IntegrationCards + IntegrationCard + IntegrationCardButton,
+                      IntegrationIcon, IntegrationsPage
     settings/         api, hooks, SettingsPage; SlackSection (fetches its own status) + AddToSlackButton,
                       SlackConnectionDetails, SlackOutcomeAlert
+  assets/logos/       kubernetes, grafana, github, datadog (SVG)
   lib/                api-client.ts, status.ts, utils.ts (cn, formatRelativeTime)
   types/              organization, incident, cluster, alert-source, investigation, mcp-server, slack
 ```
@@ -143,7 +148,7 @@ src/
 
 ## 5. Dev setup
 
-- `.env.local` (gitignored): `VITE_API_URL` (the backend's origin, without `/api/v1`): `http://localhost:5000`, or staging `https://staging.api.argussre.com` (staging's `FRONTEND_URL` must then be `http://localhost:3000`); `VITE_CLERK_PUBLISHABLE_KEY` (`pk_test_…`, the development instance). `.env.example` lists both. Only `VITE_`-prefixed variables reach the browser, and Vite builds them in, so a change on Vercel needs a redeploy.
+- `.env.local` (gitignored): `VITE_API_URL` (the backend's origin, without `/api/v1`): `http://localhost:5000`, or staging `https://staging.api.argussre.com` (staging's `FRONTEND_URL` must then be `http://localhost:3000`); `VITE_CLERK_PUBLISHABLE_KEY` (`pk_test_…`, the development instance). `VITE_GRAFANA_MCP_HOST` (our hosted Grafana MCP host, staging `staging.grafana-mcp.argussre.com`, production `grafana-mcp.argussre.com`). `.env.example` lists all three. Only `VITE_`-prefixed variables reach the browser, and Vite builds them in, so a change on Vercel needs a redeploy.
 - `npm run dev` → http://localhost:3000. The backend (`npm run dev` in `../argus-sre-backend`, port 5000) must have `FRONTEND_URL=http://localhost:3000`.
 - Calling the API by hand: `Authorization: Bearer <await window.Clerk.session.getToken()>` from the browser console (expires in about a minute).
 
@@ -168,7 +173,7 @@ src/
 - Row menus (clusters, alert sources, MCP servers): `DropdownMenu modal={false}` (a modal menu opening a modal dialog can leave the page unclickable in Radix). Closing a dialog opened from it doesn't return focus to the menu button.
 - Add alert source: the cluster checklist doesn't scroll on its own (fine for a few clusters, the API allows 100); a cluster label made invalid and then hidden by closing "Advanced" isn't checked by the browser (the backend's 400 shows under the form).
 - Investigation section: the picker remembers a chosen older run until Investigate is pressed (an automatic run that starts meanwhile doesn't take over the view); a run stuck in `running` polls 60 requests / 15 min, over half the rate limit, until the page is left or the tab hidden; it fetches its own data (not passed down by the page) so the page stays short.
-- Unknown URLs show React Router's default error screen.
+- Unknown URLs show React Router's default error screen, including the old `/mcp-servers`.
 - Clerk's "membership required" / session tasks not tried; the org gate covers a signed-in user without an active org.
 - `npm audit`: 3 low, all in the shadcn CLI (`deepmerge`), not in the bundle.
 - The favicon is still Vite's logo.
