@@ -14,10 +14,9 @@ import type { AlertSource } from '@/types/alert-source'
 
 type Props = {
   alertSources: AlertSource[]
-  canManage: boolean
 }
 
-export function AlertSourceTable({ alertSources, canManage }: Props) {
+export function AlertSourceTable({ alertSources }: Props) {
   return (
     <div className="rounded-lg border">
       <Table>
@@ -27,11 +26,9 @@ export function AlertSourceTable({ alertSources, canManage }: Props) {
             <TableHead>Clusters</TableHead>
             <TableHead>Last alert</TableHead>
             <TableHead>Added</TableHead>
-            {canManage && (
-              <TableHead>
-                <span className="sr-only">Actions</span>
-              </TableHead>
-            )}
+            <TableHead>
+              <span className="sr-only">Actions</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -56,11 +53,9 @@ export function AlertSourceTable({ alertSources, canManage }: Props) {
               <TableCell className="text-muted-foreground">
                 <RelativeTime iso={source.createdAt} />
               </TableCell>
-              {canManage && (
-                <TableCell className="text-right">
-                  <AlertSourceActions alertSource={source} />
-                </TableCell>
-              )}
+              <TableCell className="text-right">
+                <AlertSourceActions alertSource={source} />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

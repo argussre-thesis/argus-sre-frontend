@@ -1,5 +1,7 @@
 import { Ellipsis, RotateCw, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { useIsOrgAdmin } from '@/app/useIsOrgAdmin'
+import { AdminRequiredDialog } from '@/components/common/AdminRequiredDialog'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -16,6 +18,7 @@ type Props = {
 }
 
 export function ClusterActions({ cluster }: Props) {
+  const isAdmin = useIsOrgAdmin()
   const [dialog, setDialog] = useState<'rotate' | 'delete' | null>(null)
 
   function handleOpenChange(open: boolean) {
@@ -46,14 +49,15 @@ export function ClusterActions({ cluster }: Props) {
       </DropdownMenu>
       <RotateClusterTokenDialog
         cluster={cluster}
-        open={dialog === 'rotate'}
+        open={isAdmin && dialog === 'rotate'}
         onOpenChange={handleOpenChange}
       />
       <DeleteClusterDialog
         cluster={cluster}
-        open={dialog === 'delete'}
+        open={isAdmin && dialog === 'delete'}
         onOpenChange={handleOpenChange}
       />
+      <AdminRequiredDialog open={!isAdmin && dialog !== null} onOpenChange={handleOpenChange} />
     </>
   )
 }

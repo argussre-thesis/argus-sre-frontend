@@ -1,6 +1,7 @@
 import { ErrorState } from '@/components/common/ErrorState'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Skeleton } from '@/components/ui/skeleton'
+import { SlackSection } from '@/features/settings/components/SlackSection'
 import { useCurrentOrganization } from '@/features/settings/hooks'
 
 export function SettingsPage() {
@@ -10,7 +11,7 @@ export function SettingsPage() {
     <>
       <PageHeader
         title="Settings"
-        description="Your organization and how alerts are grouped into incidents."
+        description="Your organization, how alerts are grouped into incidents, and Slack."
       />
       {isPending ? (
         <Skeleton className="h-24 w-full max-w-md" />
@@ -28,6 +29,7 @@ export function SettingsPage() {
           <dd>{org.incidentGroupingWindowMinutes} min</dd>
         </dl>
       )}
+      <SlackSection />
     </>
   )
 }

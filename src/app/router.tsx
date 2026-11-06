@@ -7,6 +7,7 @@ import { AlertSourcesPage } from '@/features/alert-sources/pages/AlertSourcesPag
 import { ClustersPage } from '@/features/clusters/pages/ClustersPage'
 import { IncidentPage } from '@/features/incidents/pages/IncidentPage'
 import { IncidentsPage } from '@/features/incidents/pages/IncidentsPage'
+import { McpServersPage } from '@/features/mcp-servers/pages/McpServersPage'
 import { SettingsPage } from '@/features/settings/pages/SettingsPage'
 
 export const router = createBrowserRouter([
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
           { path: '/incidents/:incidentId', element: <IncidentPage /> },
           { path: '/clusters', element: <ClustersPage /> },
           { path: '/alert-sources', element: <AlertSourcesPage /> },
+          { path: '/mcp-servers', element: <McpServersPage /> },
           { path: '/settings', element: <SettingsPage /> },
         ],
       },

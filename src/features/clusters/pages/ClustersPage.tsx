@@ -1,5 +1,4 @@
 import { Server } from 'lucide-react'
-import { useIsOrgAdmin } from '@/app/useIsOrgAdmin'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -10,7 +9,6 @@ import { useClusters } from '@/features/clusters/hooks'
 
 export function ClustersPage() {
   const clusters = useClusters()
-  const isAdmin = useIsOrgAdmin()
 
   function renderList() {
     if (clusters.isPending) {
@@ -40,7 +38,7 @@ export function ClustersPage() {
         />
       )
     }
-    return <ClusterTable clusters={clusters.data} canManage={isAdmin} />
+    return <ClusterTable clusters={clusters.data} />
   }
 
   return (
@@ -48,7 +46,7 @@ export function ClustersPage() {
       <PageHeader
         title="Clusters"
         description="Kubernetes clusters the agent can investigate, one runner each."
-        actions={isAdmin && <AddClusterDialog />}
+        actions={<AddClusterDialog />}
       />
       {renderList()}
     </>

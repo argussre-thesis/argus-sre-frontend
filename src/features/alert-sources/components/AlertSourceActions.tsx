@@ -1,5 +1,7 @@
 import { Ellipsis, Pencil, RotateCw, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { useIsOrgAdmin } from '@/app/useIsOrgAdmin'
+import { AdminRequiredDialog } from '@/components/common/AdminRequiredDialog'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -17,6 +19,7 @@ type Props = {
 }
 
 export function AlertSourceActions({ alertSource }: Props) {
+  const isAdmin = useIsOrgAdmin()
   const [dialog, setDialog] = useState<'edit' | 'rotate' | 'delete' | null>(null)
 
   function handleOpenChange(open: boolean) {
@@ -51,19 +54,20 @@ export function AlertSourceActions({ alertSource }: Props) {
       </DropdownMenu>
       <EditAlertSourceDialog
         alertSource={alertSource}
-        open={dialog === 'edit'}
+        open={isAdmin && dialog === 'edit'}
         onOpenChange={handleOpenChange}
       />
       <RotateAlertSourceTokenDialog
         alertSource={alertSource}
-        open={dialog === 'rotate'}
+        open={isAdmin && dialog === 'rotate'}
         onOpenChange={handleOpenChange}
       />
       <DeleteAlertSourceDialog
         alertSource={alertSource}
-        open={dialog === 'delete'}
+        open={isAdmin && dialog === 'delete'}
         onOpenChange={handleOpenChange}
       />
+      <AdminRequiredDialog open={!isAdmin && dialog !== null} onOpenChange={handleOpenChange} />
     </>
   )
 }
