@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import kubernetesLogo from '@/assets/logos/kubernetes.svg'
 import { AddClusterDialog } from '@/components/common/AddClusterDialog'
+import { AddDatadogDialog } from '@/features/mcp-servers/components/AddDatadogDialog'
 import { AddGitHubDialog } from '@/features/mcp-servers/components/AddGitHubDialog'
 import { AddGrafanaDialog } from '@/features/mcp-servers/components/AddGrafanaDialog'
 import { AddMcpServerDialog } from '@/features/mcp-servers/components/AddMcpServerDialog'
@@ -28,9 +29,9 @@ export function IntegrationCards({ clusterCount, mcpServers }: Props) {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <IntegrationCard
-        icon={<img src={kubernetesLogo} alt="" className="size-5" />}
+        icon={<img src={kubernetesLogo} alt="" className="size-7" />}
         dialog={
           <AddClusterDialog trigger={<IntegrationCardButton>Kubernetes</IntegrationCardButton>} />
         }
@@ -47,23 +48,29 @@ export function IntegrationCards({ clusterCount, mcpServers }: Props) {
         }
       />
       <IntegrationCard
-        icon={<IntegrationIcon kind="grafana" />}
+        icon={<IntegrationIcon kind="grafana" className="size-7" />}
         dialog={<AddGrafanaDialog trigger={<IntegrationCardButton>Grafana</IntegrationCardButton>} />}
         description="Let the agent query metrics and logs from your Grafana Cloud stack."
         footer={serverCount('grafana')}
       />
       <IntegrationCard
-        icon={<IntegrationIcon kind="github" />}
+        icon={<IntegrationIcon kind="datadog" className="size-7" />}
+        dialog={<AddDatadogDialog trigger={<IntegrationCardButton>Datadog</IntegrationCardButton>} />}
+        description="Let the agent use Datadog with the access your token allows."
+        footer={serverCount('datadog')}
+      />
+      <IntegrationCard
+        icon={<IntegrationIcon kind="github" className="size-7" />}
         dialog={<AddGitHubDialog trigger={<IntegrationCardButton>GitHub</IntegrationCardButton>} />}
         description="Let the agent use GitHub with the access your token allows."
         footer={serverCount('github')}
       />
       <IntegrationCard
-        icon={<IntegrationIcon kind="custom" />}
+        icon={<IntegrationIcon kind="custom" className="size-7" />}
         dialog={
           <AddMcpServerDialog trigger={<IntegrationCardButton>Custom MCP</IntegrationCardButton>} />
         }
-        description="Connect any remote MCP server that accepts a bearer token."
+        description="Connect any remote MCP server with a bearer token or custom headers."
         footer={serverCount('custom')}
       />
     </div>

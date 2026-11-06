@@ -18,9 +18,16 @@ type Props = {
   onChange: (rows: HeaderRow[]) => void
   error: string | undefined
   description: string
+  showValues?: boolean
 }
 
-export function McpServerHeadersField({ rows, onChange, error, description }: Props) {
+export function McpServerHeadersField({
+  rows,
+  onChange,
+  error,
+  description,
+  showValues = false,
+}: Props) {
   function updateRow(index: number, change: Partial<HeaderRow>) {
     onChange(rows.map((row, i) => (i === index ? { ...row, ...change } : row)))
   }
@@ -42,7 +49,7 @@ export function McpServerHeadersField({ rows, onChange, error, description }: Pr
           {/* "new-password" keeps password managers out, as on the token field. */}
           <Input
             aria-label={`Header ${index + 1} value`}
-            type="password"
+            type={showValues ? 'text' : 'password'}
             value={row.value}
             onChange={(event) => updateRow(index, { value: event.target.value })}
             required

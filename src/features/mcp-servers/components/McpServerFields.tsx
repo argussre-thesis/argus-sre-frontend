@@ -54,7 +54,10 @@ export function McpServerFields({
           autoComplete="off"
           aria-invalid={Boolean(urlError) || undefined}
         />
-        <FieldDescription>The server's https address, reachable from the internet.</FieldDescription>
+        <FieldDescription>
+          The server's https address, reachable from the internet. Only servers using Streamable
+          HTTP are supported, not SSE or stdio.
+        </FieldDescription>
         <FieldError>{urlError}</FieldError>
       </Field>
       <Field>
