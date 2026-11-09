@@ -56,7 +56,6 @@ export function incidentDurationMs(incident: IncidentListItem, now = Date.now())
   return end - Date.parse(incident.createdAt)
 }
 
-// MTTR is the mean over the resolved incidents given; null when there are none.
 export function incidentStats(recent: IncidentListItem[], now = Date.now()) {
   const resolved = recent.filter((incident) => incident.resolvedAt)
   const total = resolved.reduce((sum, incident) => sum + incidentDurationMs(incident), 0)

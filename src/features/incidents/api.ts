@@ -40,7 +40,6 @@ export function investigateIncident(orgId: string, incidentId: string) {
   )
 }
 
-// Newest first.
 export async function listInvestigations(orgId: string, incidentId: string) {
   const { investigations } = await apiRequest<{ investigations: Investigation[] }>(
     `/organizations/${encodeURIComponent(orgId)}/incidents/${encodeURIComponent(incidentId)}/investigations`,
