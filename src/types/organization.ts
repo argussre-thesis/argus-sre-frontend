@@ -1,6 +1,10 @@
+export type AgentLevel = 'low' | 'medium' | 'high'
+
 export type OrganizationSettings = {
   incidentGroupingWindowMinutes: number
   autoInvestigateEnabled: boolean
+  investigationLevel: AgentLevel
+  conversationLevel: AgentLevel
 }
 
 export type Organization = OrganizationSettings & {

@@ -10,9 +10,16 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
 import { useUpdateOrganizationSettings } from '@/features/settings/hooks'
-import type { Organization } from '@/types/organization'
+import type { AgentLevel, Organization } from '@/types/organization'
 
 type Props = {
   org: Organization
@@ -22,16 +29,22 @@ export function OrganizationSettingsForm({ org }: Props) {
   const isAdmin = useIsOrgAdmin()
   const [minutes, setMinutes] = useState(String(org.incidentGroupingWindowMinutes))
   const [autoInvestigate, setAutoInvestigate] = useState(org.autoInvestigateEnabled)
+  const [investigationLevel, setInvestigationLevel] = useState(org.investigationLevel)
+  const [conversationLevel, setConversationLevel] = useState(org.conversationLevel)
   const update = useUpdateOrganizationSettings()
   const changed =
     Number(minutes) !== org.incidentGroupingWindowMinutes ||
-    autoInvestigate !== org.autoInvestigateEnabled
+    autoInvestigate !== org.autoInvestigateEnabled ||
+    investigationLevel !== org.investigationLevel ||
+    conversationLevel !== org.conversationLevel
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     update.mutate({
       incidentGroupingWindowMinutes: Number(minutes),
       autoInvestigateEnabled: autoInvestigate,
+      investigationLevel,
+      conversationLevel,
     })
   }
 
@@ -71,6 +84,22 @@ export function OrganizationSettingsForm({ org }: Props) {
           disabled={!isAdmin}
         />
       </Field>
+      <LevelField
+        id="investigation-level"
+        label="Investigation effort"
+        description="How hard the agent works on an investigation. Higher is slower and costs more."
+        value={investigationLevel}
+        onChange={setInvestigationLevel}
+        disabled={!isAdmin}
+      />
+      <LevelField
+        id="conversation-level"
+        label="Conversation effort"
+        description="How hard the agent works when you chat with it, e.g. in Slack."
+        value={conversationLevel}
+        onChange={setConversationLevel}
+        disabled={!isAdmin}
+      />
       <FieldError>{update.error?.message}</FieldError>
       <div className="flex items-center gap-4">
         {isAdmin ? (
@@ -87,5 +116,33 @@ export function OrganizationSettingsForm({ org }: Props) {
         )}
       </div>
     </form>
+  )
+}
+
+type LevelFieldProps = {
+  id: string
+  label: string
+  description: string
+  value: AgentLevel
+  onChange: (value: AgentLevel) => void
+  disabled: boolean
+}
+
+function LevelField({ id, label, description, value, onChange, disabled }: LevelFieldProps) {
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Select value={value} onValueChange={(v) => onChange(v as AgentLevel)} disabled={disabled}>
+        <SelectTrigger id={id} className="w-40">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="low">Low</SelectItem>
+          <SelectItem value="medium">Medium</SelectItem>
+          <SelectItem value="high">High</SelectItem>
+        </SelectContent>
+      </Select>
+      <FieldDescription>{description}</FieldDescription>
+    </Field>
   )
 }
