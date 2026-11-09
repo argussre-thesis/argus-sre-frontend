@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useOrgId } from '@/app/useOrgId'
 import {
@@ -11,19 +12,38 @@ import type { IncidentFilters, IncidentPage } from '@/types/incident'
 
 // The API's largest page. One request per summary, because of its rate limit.
 const SUMMARY_LIMIT = 100
+export const ALL_TIME_PAGE_SIZE = 20
 
 function withoutTests(page: IncidentPage): IncidentPage {
   return { ...page, incidents: page.incidents.filter((incident) => !incident.isTest) }
 }
 
-export function useIncidents(filters: IncidentFilters) {
+// All time (no `since`): pages of 20, shown one at a time. A time range: pages of 100, fetched
+// until one reaches past `since`, because the API can't filter by date.
+export function useIncidents(filters: IncidentFilters, since?: number) {
   const orgId = useOrgId()
-  return useInfiniteQuery({
-    queryKey: ['incidents', 'list', orgId, filters],
-    queryFn: ({ pageParam }) => listIncidents(orgId, filters, pageParam),
+  const limit = since === undefined ? ALL_TIME_PAGE_SIZE : SUMMARY_LIMIT
+  const query = useInfiniteQuery({
+    queryKey: ['incidents', 'list', orgId, filters, limit],
+    queryFn: ({ pageParam }) => listIncidents(orgId, filters, pageParam, limit),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   })
+
+  const oldest = query.data?.pages.at(-1)?.incidents.at(-1)
+  const needsMore =
+    since !== undefined &&
+    query.hasNextPage &&
+    !query.isFetching &&
+    !query.isError &&
+    oldest !== undefined &&
+    Date.parse(oldest.createdAt) >= since
+  const { fetchNextPage } = query
+  useEffect(() => {
+    if (needsMore) void fetchNextPage()
+  }, [needsMore, fetchNextPage])
+
+  return query
 }
 
 export function useOpenIncidentsSummary() {

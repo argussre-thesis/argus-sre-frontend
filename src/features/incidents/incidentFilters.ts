@@ -8,29 +8,37 @@ const rangeMs = {
   '30d': 30 * 24 * HOUR,
 }
 
-export type IncidentRange = keyof typeof rangeMs
+export type IncidentRange = keyof typeof rangeMs | 'all'
+
+export const DEFAULT_RANGE: IncidentRange = '7d'
 
 export type LocalIncidentFilters = {
   search?: string
-  range?: IncidentRange
+  range: IncidentRange
 }
 
 export type IncidentPageFilters = IncidentFilters & LocalIncidentFilters
 
 export function parseRange(value: string | null): IncidentRange | undefined {
-  return value === '24h' || value === '7d' || value === '30d' ? value : undefined
+  return value === '24h' || value === '7d' || value === '30d' || value === 'all' ? value : undefined
 }
 
-// shortcut: the API has no search or date params, so this only sees incidents already loaded.
-// Move these to query params once the backend has them.
+// The oldest createdAt (ms) a range keeps; undefined for all time.
+export function rangeStart(range: IncidentRange, now = Date.now()) {
+  return range === 'all' ? undefined : now - rangeMs[range]
+}
+
+// shortcut: the API has no search or date params, so this filters incidents already loaded
+// (useIncidents loads a whole time range). Move these to query params once the backend has them.
 export function filterIncidents(
   incidents: IncidentListItem[],
   { search, range }: LocalIncidentFilters,
   now = Date.now(),
 ): IncidentListItem[] {
   const term = search?.trim().toLowerCase()
+  const start = rangeStart(range, now)
   return incidents.filter((incident) => {
-    if (range && now - Date.parse(incident.createdAt) > rangeMs[range]) return false
+    if (start !== undefined && Date.parse(incident.createdAt) < start) return false
     if (!term) return true
     return [incident.title, incident.cluster?.name ?? ''].some((text) =>
       text.toLowerCase().includes(term),

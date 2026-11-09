@@ -75,7 +75,7 @@ export function OverviewPage() {
             <h2 className="text-sm font-medium">Needs attention</h2>
             {openIncidents.length > ATTENTION_ROWS && (
               <Button asChild variant="ghost" size="sm">
-                <Link to="/incidents?status=OPEN">View all open</Link>
+                <Link to="/incidents?status=OPEN&range=all">View all open</Link>
               </Button>
             )}
           </div>

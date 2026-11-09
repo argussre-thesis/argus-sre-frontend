@@ -7,7 +7,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { parseRange, type IncidentPageFilters } from '@/features/incidents/incidentFilters'
+import {
+  DEFAULT_RANGE,
+  parseRange,
+  type IncidentPageFilters,
+} from '@/features/incidents/incidentFilters'
 import type { Cluster } from '@/types/cluster'
 
 type Props = {
@@ -65,17 +69,17 @@ export function IncidentFilterBar({ filters, clusters, onChange }: Props) {
         </SelectContent>
       </Select>
       <Select
-        value={filters.range ?? ALL}
-        onValueChange={(value) => onChange({ ...filters, range: parseRange(value) })}
+        value={filters.range}
+        onValueChange={(value) => onChange({ ...filters, range: parseRange(value) ?? DEFAULT_RANGE })}
       >
         <SelectTrigger className="w-40" aria-label="Time range">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL}>All time</SelectItem>
           <SelectItem value="24h">Last 24 hours</SelectItem>
           <SelectItem value="7d">Last 7 days</SelectItem>
           <SelectItem value="30d">Last 30 days</SelectItem>
+          <SelectItem value="all">All time</SelectItem>
         </SelectContent>
       </Select>
     </div>
