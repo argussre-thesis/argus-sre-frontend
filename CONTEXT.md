@@ -1,7 +1,7 @@
 # Frontend context
 
 > Living document for `argus-sre-frontend/`: decisions, status, and what the backend does or doesn't give us.
-> Last updated: 2026-11-06
+> Last updated: 2026-11-09
 > How code is written here: `CLAUDE.md`. The whole project: `../CONTEXT.md`. API contract: `../argus-sre-backend/src/Usage.md`. Source for the docs pages: `../USER-GUIDE.md`.
 
 ---
@@ -35,17 +35,18 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | Add to Slack button | Slack's own image from its CDN (user, 2026-11-05), inside a real `Button`. An exception to "lucide only" and "theme tokens only", in this one place | Lucide has no Slack icon any more, and an image needs no hex colours in our code. Slack's docs page for the button (marked legacy) states no usage rules either way |
 | Integration logos | SVG files in `src/assets/logos/`, shown with `<img>` (user, 2026-11-06). An exception to "lucide only" and "theme tokens only", for these logos | Lucide has no such logos. GitHub's is near-black, so it gets `dark:invert` |
 | Hosted Grafana address | `VITE_GRAFANA_MCP_HOST`, read in `features/mcp-servers/integrations.ts`. If unset, the Grafana dialog shows an inline error and the app still loads, unlike `VITE_API_URL`, which stops it at startup | One integration's setting shouldn't take the whole app down |
+| Home page | **`/overview`** (2026-11-09, part of the step 16 trial; was `/incidents`): four stat cards and a "Needs attention" list of open incidents | From the redesign brief (user, 2026-11-09). An incidents-over-time chart needs Recharts, not installed (asks first) |
 | Hosting | Vercel; `vercel.json` rewrites every path to `index.html` (2026-10-29) | Without it a refresh on `/sign-in`, `/incidents/…` gave Vercel's 404. Production uses Clerk's production instance (`pk_live_…`) on the user's domain; the backend's `FRONTEND_URL` must be that domain |
 
-**Status → colour (Traffic light).** In code so far: incident and alert status, unknown cluster, test, runner never connected, alert source never received / no clusters, investigation status. The rest is decided, added to `lib/status.ts` when first shown.
+**Status → colour (Traffic light).** In code so far: incident and alert status, unknown cluster, test, runner never connected, alert source never received / no clusters, investigation status. The rest is decided, added to `lib/status.ts` when first shown. Since step 16, `StatusBadge` draws a coloured dot plus the label, and grey labels are muted; the Badge variants are no longer used for status.
 
 | Badge variant | Used for |
 |---|---|
 | `destructive` (red) | incident OPEN, alert FIRING, severity `critical`, investigation `failed` |
-| `warning` (amber) | severity `warning`, unknown cluster, runner never connected, alert source never received or with no clusters left (setup problems) |
+| `warning` (amber) | severity `warning`, runner never connected, alert source never received or with no clusters left (setup problems) |
 | `info` (blue) | investigation `running`, severity `info` |
 | `success` (green) | incident / alert RESOLVED, investigation `done` |
-| `secondary` (grey) | test incident, unknown or other severity |
+| `secondary` (grey) | test incident, unknown cluster (was amber until step 16: "muted" in the redesign brief), unknown or other severity |
 
 ---
 
@@ -67,6 +68,8 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | 12 | Org settings on the Settings page: grouping window (0–1440) and "Investigate automatically" switch in one form, `OrganizationSettingsForm`, saved together because `PATCH …/settings` requires both. Save is disabled until something changes. Members see disabled fields, and Save shows the admin message. Adds shadcn's `Switch`. Reported working by the user | ✅ 2026-11-06 |
 | 13 | MCP custom headers: "Bearer token" or "Custom headers" on the Custom MCP and Edit forms, rules checked by `parseHeaderRows`, because the backend's answer is only "Request body validation failed". Editing lists the header names; empty rows keep the stored headers, and new ones replace all of them. A "Credentials" column in the table, a Streamable HTTP hint on the URL field. Reported working by the user | ✅ 2026-11-06 |
 | 14 | Datadog card: site dropdown, header rows prefilled with `Authorization: Bearer `, values shown as plain text in this dialog only, `Bearer` alone refused. Card logos raised to `size-7`, cards in three columns. Reported working by the user | ✅ 2026-11-06 |
+| 15 | Theme: light "Ink", dark "Volt" in `src/index.css` (§2), picked by the user from live previews in a temporary header dropdown, since deleted. Contrast checked by script against the 4.5:1 target for text and status badges. Reported liked by the user | ✅ 2026-11-09 |
+| 16 | Redesign, the parts that need no backend work (user's brief, 2026-11-09): tables on a card with a shaded header (`TableCard`); status as dot + label; absolute time in a tooltip on every relative time (`TooltipProvider` in `ProtectedLayout`); `/overview` as home (open incidents, firing alerts, opened in the last 24h, mean time to resolve, needs attention); Incidents: search, time range, Duration column, `N×` badge on incidents sharing title and cluster, whole row clickable; Clusters: open-incident count per cluster, linked to the filtered list; Alert sources: copy webhook URL per row (`CopyButton`, also used by `CopyField`); Settings: left sub-nav, `SettingsCard` sections, Slack logo, red danger zone around Disconnect. Not done: anything that needs the backend (below), the chart (Recharts), cluster cards (too little data for cards yet). Typecheck, lint, build; logic checked by script; components rendered through Vite SSR and screenshotted. **Not checked in the browser, and not yet confirmed as kept by the user** | 🟡 2026-11-09 |
 
 **How these work (notes from steps 8–10).**
 
@@ -104,6 +107,7 @@ Ready now (the backend already has what they need):
 Waiting on the backend or the agent service:
 - **Investigation trigger rules** (`../CONTEXT.md` §4.4; not placed in the 2026-10-30 order, §4.5): a Settings UI for admins, rules as lists of `{label, op, value}` conditions.
 - **Investigation effort as an org setting**, lite / balanced / max, and the model no longer shown on a run (user, 2026-10-30; needs the backend and the agent service first; today the run summary shows `model (effort)`).
+- **Redesign items that need data** (step 16 brief, 2026-11-09): investigation status and a one-line root cause in the incident list; severity in the list; org-wide investigation count; incident totals and an over-time series (a summary endpoint); search and date params on the incident list; open-incident count per cluster; runner health (gateway state), node count and K8s version, last investigation per cluster; alert source type, 24h alert volume, a send-test-alert action; a Slack test-message action; MCP server health, tool count, last used.
 - **Conversations** (chat; replaced "chat on an investigation" 2026-10-30, `../CONTEXT.md` §4.5): Slack comes first, the web chat UI after. A web conversation is seen only by the person chatting.
 
 Suggested order for the ready ones (not decided): browser check → transcript → not-found page and code splitting.
@@ -120,11 +124,12 @@ src/
                       AppSidebar (nav list: add one entry per page), queryClient.ts, useOrgId.ts, useIsOrgAdmin.ts
   components/ui/      shadcn, generated (badge has the warning/info/success variants). `npx shadcn add` asks before
                       overwriting an existing file and stops when it can't ask: run it from Bash as `yes n | npx shadcn@latest add …`
-  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle, RelativeTime, CopyField, AdminRequiredDialog, AddClusterDialog,
-                      ConfirmDialog
+  components/common/  PageHeader, ErrorState, EmptyState, StatusBadge, ThemeToggle, RelativeTime, CopyField + CopyButton, AdminRequiredDialog,
+                      AddClusterDialog, ConfirmDialog, TableCard
   hooks/use-mobile.ts shadcn, generated (components.json's `hooks` alias)
   features/
-    incidents/        api, hooks, IncidentFilterBar, IncidentTable, IncidentsPage (list);
+    incidents/        api, hooks (also the 100-incident summaries), incidentFilters.ts (search, range, repeats, duration, stats),
+                      OverviewPage + StatCard; IncidentFilterBar, IncidentTable, IncidentsPage (list);
                       IncidentSummary, IncidentInvestigation (section, fetches its own runs) + InvestigationPicker,
                       InvestigationSummary, RcaReport, AlertTable + AlertRow + AlertDetails, IncidentPage (one incident)
     clusters/         api, hooks (also used by the incidents filter), ClusterTable, ClusterActions (row menu),
@@ -140,10 +145,10 @@ src/
                       (form parts), AddMcpServerDialog, AddGrafanaDialog, AddDatadogDialog, AddGitHubDialog, EditMcpServerDialog +
                       EditMcpServerForm, DeleteMcpServerDialog, IntegrationCards + IntegrationCard + IntegrationCardButton,
                       IntegrationIcon, IntegrationsPage
-    settings/         api, hooks, SettingsPage; OrganizationSettingsForm; SlackSection (fetches its own status) + AddToSlackButton,
+    settings/         api, hooks, SettingsPage + SettingsCard; OrganizationSettingsForm; SlackSection (fetches its own status) + AddToSlackButton,
                       SlackConnectionDetails, SlackOutcomeAlert
-  assets/logos/       kubernetes, grafana, github, datadog (SVG)
-  lib/                api-client.ts, status.ts, utils.ts (cn, formatRelativeTime)
+  assets/logos/       kubernetes, grafana, github, datadog, slack (SVG)
+  lib/                api-client.ts, status.ts, utils.ts (cn, formatRelativeTime, formatDuration)
   types/              organization, incident, cluster, alert-source, investigation, mcp-server, slack
 ```
 
@@ -170,7 +175,7 @@ src/
 - `ThemeToggle` keeps the theme on `<html>` + `localStorage` only; move it into a provider once another component must react to it (e.g. a toast library's `theme` prop).
 - The Add to Slack image is hotlinked from `platform.slack-edge.com`. It worked on 2026-11-05, but Slack only documents that button on a page marked legacy, so it may go away. The alt text keeps the button usable; self-host the PNGs in `public/` if that happens.
 - Main bundle 792 KB (239 KB gzipped, 2026-11-05; 777 KB / 235 KB on 2026-10-30, +119 KB for `react-markdown` and its parser; 658 KB before it; 617 KB / 189 KB gzipped on 2026-10-29, 548 KB on 2026-10-28), over Vite's 500 KB warning, mostly Clerk's bundled UI. Route-level lazy loading later; lazy-loading `RcaReport` alone would take `react-markdown` out of the first load.
-- Incident page: Resolve has no "are you sure" (offered, not asked for; a manual resolve can't be undone); no in-page back link (the sidebar, and the browser's Back, which keeps the list's filters); only the title in a list row is a link; a very long label value doesn't wrap (the `Badge` is `nowrap`), so the alerts table scrolls sideways (a side panel, the existing `Sheet`, if real alerts need it).
+- Incident page: Resolve has no "are you sure" (offered, not asked for; a manual resolve can't be undone); no in-page back link (the sidebar, and the browser's Back, which keeps the list's filters); a very long label value doesn't wrap (the `Badge` is `nowrap`), so the alerts table scrolls sideways (a side panel, the existing `Sheet`, if real alerts need it).
 - Delete dialogs share `ConfirmDialog` (2026-11-05). The Rotate dialogs are still near copies for clusters and alert sources (and the add dialogs' token view), because they go on to show a token; MCP servers have neither.
 - `ConfirmDialog` doesn't close itself on success: what it acts on leaves the page and takes the dialog with it (a deleted row). Anything that stays on the page needs it closed some other way.
 - Row menus (clusters, alert sources, MCP servers): `DropdownMenu modal={false}` (a modal menu opening a modal dialog can leave the page unclickable in Radix). Closing a dialog opened from it doesn't return focus to the menu button.
@@ -180,3 +185,10 @@ src/
 - Clerk's "membership required" / session tasks not tried; the org gate covers a signed-in user without an active org.
 - `npm audit`: 3 low, all in the shadcn CLI (`deepmerge`), not in the bundle.
 - The favicon is still Vite's logo.
+- Step 16 shortcuts (`shortcut:` comments in the code):
+  - Overview and the Clusters counts read one page of 100 open and 100 recent incidents (test incidents left out). Overview's cards say "100+" or "From the latest 100 incidents" when there are more; the Clusters counts can quietly run low.
+  - Incident search and time range filter only the incidents already loaded; the page says so while more pages exist.
+  - The `N×` badge counts within the loaded list only, and doesn't collapse rows into a group.
+  - Incident rows are clickable through a stretched `::after` on the title link (`tr` is `relative`); anything else interactive in a row needs `relative` to sit above it, as the Started time does.
+  - `src/assets/logos/slack.svg` was written from memory, not taken from Slack's brand files; replace it with the official one.
+  - `lib/status.ts`'s comment still says "amber is a setup problem", but unknown cluster is now grey.
