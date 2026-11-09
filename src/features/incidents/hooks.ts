@@ -7,7 +7,14 @@ import {
   listInvestigations,
   resolveIncident,
 } from '@/features/incidents/api'
-import type { IncidentFilters } from '@/types/incident'
+import type { IncidentFilters, IncidentPage } from '@/types/incident'
+
+// The API's largest page. One request per summary, because of its rate limit.
+const SUMMARY_LIMIT = 100
+
+function withoutTests(page: IncidentPage): IncidentPage {
+  return { ...page, incidents: page.incidents.filter((incident) => !incident.isTest) }
+}
 
 export function useIncidents(filters: IncidentFilters) {
   const orgId = useOrgId()
@@ -16,6 +23,24 @@ export function useIncidents(filters: IncidentFilters) {
     queryFn: ({ pageParam }) => listIncidents(orgId, filters, pageParam),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  })
+}
+
+export function useOpenIncidentsSummary() {
+  const orgId = useOrgId()
+  return useQuery({
+    queryKey: ['incidents', 'list', orgId, 'open-summary'],
+    queryFn: () => listIncidents(orgId, { status: 'OPEN' }, undefined, SUMMARY_LIMIT),
+    select: withoutTests,
+  })
+}
+
+export function useRecentIncidentsSummary() {
+  const orgId = useOrgId()
+  return useQuery({
+    queryKey: ['incidents', 'list', orgId, 'recent-summary'],
+    queryFn: () => listIncidents(orgId, {}, undefined, SUMMARY_LIMIT),
+    select: withoutTests,
   })
 }
 

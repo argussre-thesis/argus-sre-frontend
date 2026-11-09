@@ -1,4 +1,5 @@
 import { RelativeTime } from '@/components/common/RelativeTime'
+import { TableCard } from '@/components/common/TableCard'
 import {
   Table,
   TableBody,
@@ -18,7 +19,7 @@ type Props = {
 
 export function McpServerTable({ mcpServers }: Props) {
   return (
-    <div className="rounded-lg border">
+    <TableCard>
       <Table>
         <TableHeader>
           <TableRow>
@@ -56,6 +57,6 @@ export function McpServerTable({ mcpServers }: Props) {
           ))}
         </TableBody>
       </Table>
-    </div>
+    </TableCard>
   )
 }

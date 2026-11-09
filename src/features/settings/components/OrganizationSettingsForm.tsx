@@ -36,7 +36,7 @@ export function OrganizationSettingsForm({ org }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-md flex-col gap-6">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       <Field>
         <FieldLabel htmlFor="grouping-window">Incident grouping window (minutes)</FieldLabel>
         {/* The backend's rule: a whole number from 0 to 1440. */}

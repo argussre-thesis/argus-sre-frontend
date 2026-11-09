@@ -17,7 +17,7 @@ export function SlackConnectionDetails({ connection }: Props) {
   const disconnect = useDisconnectSlack()
 
   const trigger = (
-    <Button variant="outline" className="w-fit">
+    <Button variant="destructive" className="shrink-0">
       Disconnect
     </Button>
   )
@@ -37,21 +37,27 @@ export function SlackConnectionDetails({ connection }: Props) {
       <p className="text-sm text-muted-foreground">
         If the channel is private, type /invite @argus there so Argus can post.
       </p>
-      {isAdmin ? (
-        <ConfirmDialog
-          trigger={trigger}
-          title="Disconnect Slack?"
-          description={`Argus is removed from the ${connection.teamName} workspace, and stops posting reports and answering @argus there. Past incidents are kept. You can connect again later.`}
-          confirmLabel="Disconnect"
-          pendingLabel="Disconnecting…"
-          errorTitle="Couldn't disconnect Slack"
-          action={disconnect}
-          open={open}
-          onOpenChange={setOpen}
-        />
-      ) : (
-        <AdminRequiredDialog trigger={trigger} />
-      )}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-lg border border-destructive/50 p-4">
+        <div className="flex flex-col gap-1">
+          <p className="text-sm font-medium text-destructive">Disconnect Slack</p>
+          <p className="text-sm text-muted-foreground">Removes Argus from this workspace.</p>
+        </div>
+        {isAdmin ? (
+          <ConfirmDialog
+            trigger={trigger}
+            title="Disconnect Slack?"
+            description={`Argus is removed from the ${connection.teamName} workspace, and stops posting reports and answering @argus there. Past incidents are kept. You can connect again later.`}
+            confirmLabel="Disconnect"
+            pendingLabel="Disconnecting…"
+            errorTitle="Couldn't disconnect Slack"
+            action={disconnect}
+            open={open}
+            onOpenChange={setOpen}
+          />
+        ) : (
+          <AdminRequiredDialog trigger={trigger} />
+        )}
+      </div>
     </div>
   )
 }

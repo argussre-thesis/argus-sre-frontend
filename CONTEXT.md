@@ -25,8 +25,8 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | Server data | TanStack Query 5. `staleTime` 30s, no retry on a 4xx (429 included), at most 2 retries otherwise | The backend allows 100 requests / 15 min per IP |
 | HTTP | One wrapper, `lib/api-client.ts`: `VITE_API_URL` + `/api/v1`, Clerk `getToken()` (works outside React), unwraps `data`, throws `ApiError {status, code, message, details}` | Not the envelope (e.g. the limiter's 429) → `HTTP_<status>`; unreachable → `NETWORK_ERROR` |
 | API types | Written by hand in `src/types/` from `Usage.md` | No OpenAPI spec (user, 2026-10-28): about a day of backend work (response schemas for ~23 routes); revisit once the API settles |
-| Theme | shadcn **Neutral** (user, 2026-10-28, compared live with Slate and Blue accent, light and dark) | A tweakcn export can still replace the base variables in `src/index.css`; keep the status block |
-| Status colours | **"Traffic light"** (user, 2026-10-28; "Calm", with resolved grey, was the other option). Tokens `--warning`, `--info`, `--success` in `index.css` (light = 700 shades for 4.5:1 text, dark = 400), Badge variants of the same names, tinted | Defined once in `lib/status.ts`, shown only through `StatusBadge` |
+| Theme | **Light "Ink", dark "Volt"** (user, 2026-11-09; replaced shadcn Neutral, chosen 2026-10-28). Ink: pure black on white, flat, the active sidebar item inverts, `--radius` 0.25rem. Volt: near-black with lifted cards and one lime accent (buttons, focus ring, active sidebar item), `--radius` 0.375rem. Picked live from palettes in a temporary header dropdown (deleted); rejected: hue-tinted neutrals, blueprint blue, plum | User wanted more contrast and less of a default-shadcn look. Lime breaks "colour only for meaning" on purpose. The status block must be kept if the base variables are replaced |
+| Status colours | **"Traffic light"** (user, 2026-10-28; "Calm", with resolved grey, was the other option). Tokens `--destructive`, `--warning`, `--info`, `--success` in `index.css`, set per mode so each status text passes 4.5:1 on its own tint (checked 2026-11-09). Shown as a coloured dot plus label (`StatusBadge`, 2026-11-09; were tinted badges) | Defined once in `lib/status.ts`, shown only through `StatusBadge` |
 | Dark mode | Dark first. `dark` class on `<html>`, set by an inline script in `index.html` before the first paint, from `localStorage` `argus-theme`; `ThemeToggle` flips it | No theme provider (shortcut, see §6) |
 | Lists | Filters in the URL search params (`?status=OPEN&cluster=…`), replace, not push | Back from an incident, or a shared link, keeps them |
 | RCA rendering | `react-markdown` 10 (user OK, 2026-10-30), no `remark-gfm`, no raw HTML (its default: the report is model output built from untrusted alerts; `javascript:` links stripped). Elements styled through its `components` map with theme tokens, no typography plugin; report headings start at h3 | The agent's prompt asks for `##` sections, bullets, inline code and command blocks only, nothing GFM. A prompt that adds tables needs `remark-gfm` |
@@ -65,6 +65,8 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 | 10 | Slack settings on the Settings page, in `features/settings/`. Reported working by the user | ✅ 2026-11-05 |
 | 11 | Integrations page (design: `../CONTEXT.md` §4.7): `/integrations` replaces `/mcp-servers`. Kubernetes, Grafana, GitHub and Custom MCP cards above the saved servers table, with a count per card and logos on the rows (matched by hostname). `AddClusterDialog` moved to `components/common/`. `features/mcp-servers/` kept its name. `VITE_GRAFANA_MCP_HOST` is set on Vercel (user, 2026-11-06). Reported working by the user; what is left is under "Left from the Integrations page" below | ✅ 2026-11-06 |
 | 12 | Org settings on the Settings page: grouping window (0–1440) and "Investigate automatically" switch in one form, `OrganizationSettingsForm`, saved together because `PATCH …/settings` requires both. Save is disabled until something changes. Members see disabled fields, and Save shows the admin message. Adds shadcn's `Switch`. Reported working by the user | ✅ 2026-11-06 |
+| 13 | MCP custom headers: "Bearer token" or "Custom headers" on the Custom MCP and Edit forms, rules checked by `parseHeaderRows`, because the backend's answer is only "Request body validation failed". Editing lists the header names; empty rows keep the stored headers, and new ones replace all of them. A "Credentials" column in the table, a Streamable HTTP hint on the URL field. Reported working by the user | ✅ 2026-11-06 |
+| 14 | Datadog card: site dropdown, header rows prefilled with `Authorization: Bearer `, values shown as plain text in this dialog only, `Bearer` alone refused. Card logos raised to `size-7`, cards in three columns. Reported working by the user | ✅ 2026-11-06 |
 
 **How these work (notes from steps 8–10).**
 
@@ -89,7 +91,7 @@ The web UI of Argus. Users sign in, pick their organization, see incidents, open
 
 Left from the Integrations page (2026-11-06):
 - **Confirm the token hints:** a Viewer-role Grafana token, and a fine-grained GitHub token.
-- **Ideas, not decided:** a Datadog card (the logo is in `src/assets/logos/`), install instructions in the Add cluster token step (user: later), a redirect from the old `/mcp-servers`.
+- **Ideas, not decided:** install instructions in the Add cluster token step (user: later), a redirect from the old `/mcp-servers`.
 
 To look into (user, 2026-11-05):
 - **Accepting an organization invite doesn't lead to the frontend.** The person who accepts isn't sent to the app. The cause hasn't been looked into, so it's not known whether it's our code, the backend or Clerk's settings.
@@ -131,9 +133,11 @@ src/
                       ClusterLabelField (form parts, shared by add and edit), AlertSourceActions (row menu),
                       EditAlertSourceDialog + EditAlertSourceForm, RotateAlertSourceTokenDialog, DeleteAlertSourceDialog,
                       AlertSourcesPage
-    mcp-servers/      api, hooks, integrations.ts (Grafana address, which card a saved URL belongs to), mcpServerErrors.ts,
-                      McpServerTable, McpServerActions (row menu), McpServerFields + McpServerNameField + McpServerTokenField
-                      (form parts), AddMcpServerDialog, AddGrafanaDialog, AddGitHubDialog, EditMcpServerDialog +
+    mcp-servers/      api, hooks, integrations.ts (Grafana address, Datadog sites, which card a saved URL belongs to), mcpServerErrors.ts,
+                      mcpServerHeaders.ts (form values, header rules),
+                      McpServerTable, McpServerActions (row menu), McpServerFields + McpServerNameField + McpServerTokenField +
+                      McpServerHeadersField
+                      (form parts), AddMcpServerDialog, AddGrafanaDialog, AddDatadogDialog, AddGitHubDialog, EditMcpServerDialog +
                       EditMcpServerForm, DeleteMcpServerDialog, IntegrationCards + IntegrationCard + IntegrationCardButton,
                       IntegrationIcon, IntegrationsPage
     settings/         api, hooks, SettingsPage; OrganizationSettingsForm; SlackSection (fetches its own status) + AddToSlackButton,

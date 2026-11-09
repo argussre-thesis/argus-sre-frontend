@@ -1,3 +1,4 @@
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { formatRelativeTime } from '@/lib/utils'
 
 type Props = {
@@ -6,8 +7,11 @@ type Props = {
 
 export function RelativeTime({ iso }: Props) {
   return (
-    <time dateTime={iso} title={new Date(iso).toLocaleString()}>
-      {formatRelativeTime(iso)}
-    </time>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <time dateTime={iso}>{formatRelativeTime(iso)}</time>
+      </TooltipTrigger>
+      <TooltipContent>{new Date(iso).toLocaleString()}</TooltipContent>
+    </Tooltip>
   )
 }

@@ -20,6 +20,17 @@ export function formatRelativeTime(iso: string, now = Date.now()): string {
   return "just now"
 }
 
+// "42m", "3h 5m", "2d 4h". Two parts at most: a duration in a table only needs its rough size.
+export function formatDuration(ms: number): string {
+  const minutes = Math.floor(Math.max(ms, 0) / 60_000)
+  if (minutes < 1) return "<1m"
+  if (minutes < 60) return `${minutes}m`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return minutes % 60 ? `${hours}h ${minutes % 60}m` : `${hours}h`
+  const days = Math.floor(hours / 24)
+  return hours % 24 ? `${days}d ${hours % 24}h` : `${days}d`
+}
+
 // For URLs that come from alert senders: only web pages become links, never javascript: and the like.
 export function webUrl(url: string | null | undefined): string | null {
   return url && /^https?:\/\//i.test(url) ? url : null

@@ -1,5 +1,7 @@
+import { CopyButton } from '@/components/common/CopyButton'
 import { RelativeTime } from '@/components/common/RelativeTime'
 import { StatusBadge } from '@/components/common/StatusBadge'
+import { TableCard } from '@/components/common/TableCard'
 import {
   Table,
   TableBody,
@@ -8,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { webhookUrl } from '@/features/alert-sources/api'
 import { AlertSourceActions } from '@/features/alert-sources/components/AlertSourceActions'
 import { alertSourceNeverReceived, alertSourceNoClusters } from '@/lib/status'
 import type { AlertSource } from '@/types/alert-source'
@@ -18,7 +21,7 @@ type Props = {
 
 export function AlertSourceTable({ alertSources }: Props) {
   return (
-    <div className="rounded-lg border">
+    <TableCard>
       <Table>
         <TableHeader>
           <TableRow>
@@ -53,13 +56,16 @@ export function AlertSourceTable({ alertSources }: Props) {
               <TableCell className="text-muted-foreground">
                 <RelativeTime iso={source.createdAt} />
               </TableCell>
-              <TableCell className="text-right">
-                <AlertSourceActions alertSource={source} />
+              <TableCell>
+                <div className="flex items-center justify-end gap-1">
+                  <CopyButton label="webhook URL" value={webhookUrl} variant="ghost" size="icon-sm" />
+                  <AlertSourceActions alertSource={source} />
+                </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-    </div>
+    </TableCard>
   )
 }

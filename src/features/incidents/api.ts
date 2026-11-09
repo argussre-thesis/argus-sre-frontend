@@ -2,11 +2,17 @@ import { apiRequest } from '@/lib/api-client'
 import type { IncidentDetail, IncidentFilters, IncidentPage } from '@/types/incident'
 import type { Investigation } from '@/types/investigation'
 
-export function listIncidents(orgId: string, filters: IncidentFilters, cursor?: string) {
+export function listIncidents(
+  orgId: string,
+  filters: IncidentFilters,
+  cursor?: string,
+  limit?: number,
+) {
   const params = new URLSearchParams()
   if (filters.status) params.set('status', filters.status)
   if (filters.clusterId) params.set('clusterId', filters.clusterId)
   if (cursor) params.set('cursor', cursor)
+  if (limit) params.set('limit', String(limit))
   const query = params.toString()
 
   return apiRequest<IncidentPage>(

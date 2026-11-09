@@ -6,9 +6,13 @@ import { PageHeader } from '@/components/common/PageHeader'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ClusterTable } from '@/features/clusters/components/ClusterTable'
 import { useClusters } from '@/features/clusters/hooks'
+import { useOpenIncidentsSummary } from '@/features/incidents/hooks'
 
 export function ClustersPage() {
   const clusters = useClusters()
+  // shortcut: counts come from one page of 100 open incidents, so past that they can run low.
+  // Replace with a count per cluster in the API when the backend has one.
+  const open = useOpenIncidentsSummary()
 
   function renderList() {
     if (clusters.isPending) {
@@ -38,7 +42,7 @@ export function ClustersPage() {
         />
       )
     }
-    return <ClusterTable clusters={clusters.data} />
+    return <ClusterTable clusters={clusters.data} openIncidents={open.data?.incidents} />
   }
 
   return (

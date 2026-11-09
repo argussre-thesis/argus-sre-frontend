@@ -3,6 +3,7 @@ import { Navigate, Outlet } from 'react-router'
 import { AppSidebar } from '@/app/AppSidebar'
 import { ThemeToggle } from '@/components/common/ThemeToggle'
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 export function ProtectedLayout() {
   const { isLoaded, isSignedIn, orgId } = useAuth()
@@ -20,20 +21,22 @@ export function ProtectedLayout() {
   }
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-12 items-center gap-2 border-b px-4">
-          <SidebarTrigger aria-label="Toggle sidebar" />
-          <div className="ml-auto flex items-center gap-2">
-            <ThemeToggle />
-            <UserButton />
+    <TooltipProvider delayDuration={300}>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex h-12 items-center gap-2 border-b px-4">
+            <SidebarTrigger aria-label="Toggle sidebar" />
+            <div className="ml-auto flex items-center gap-2">
+              <ThemeToggle />
+              <UserButton />
+            </div>
+          </header>
+          <div className="flex flex-1 flex-col gap-6 p-6">
+            <Outlet />
           </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-6 p-6">
-          <Outlet />
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        </SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   )
 }
