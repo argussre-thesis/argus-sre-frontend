@@ -31,12 +31,14 @@ export function OrganizationSettingsForm({ org }: Props) {
   const [autoInvestigate, setAutoInvestigate] = useState(org.autoInvestigateEnabled)
   const [investigationLevel, setInvestigationLevel] = useState(org.investigationLevel)
   const [conversationLevel, setConversationLevel] = useState(org.conversationLevel)
+  const [webSearch, setWebSearch] = useState(org.webSearchToolEnabled)
   const update = useUpdateOrganizationSettings()
   const changed =
     Number(minutes) !== org.incidentGroupingWindowMinutes ||
     autoInvestigate !== org.autoInvestigateEnabled ||
     investigationLevel !== org.investigationLevel ||
-    conversationLevel !== org.conversationLevel
+    conversationLevel !== org.conversationLevel ||
+    webSearch !== org.webSearchToolEnabled
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -45,6 +47,7 @@ export function OrganizationSettingsForm({ org }: Props) {
       autoInvestigateEnabled: autoInvestigate,
       investigationLevel,
       conversationLevel,
+      webSearchToolEnabled: webSearch,
     })
   }
 
@@ -100,6 +103,21 @@ export function OrganizationSettingsForm({ org }: Props) {
         onChange={setConversationLevel}
         disabled={!isAdmin}
       />
+      <Field orientation="horizontal">
+        <FieldContent>
+          <FieldLabel htmlFor="web-search">Web search</FieldLabel>
+          <FieldDescription>
+            The agent can search the web in investigations and conversations. Searches are billed
+            per use.
+          </FieldDescription>
+        </FieldContent>
+        <Switch
+          id="web-search"
+          checked={webSearch}
+          onCheckedChange={setWebSearch}
+          disabled={!isAdmin}
+        />
+      </Field>
       <FieldError>{update.error?.message}</FieldError>
       <div className="flex items-center gap-4">
         {isAdmin ? (

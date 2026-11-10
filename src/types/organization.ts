@@ -5,6 +5,7 @@ export type OrganizationSettings = {
   autoInvestigateEnabled: boolean
   investigationLevel: AgentLevel
   conversationLevel: AgentLevel
+  webSearchToolEnabled: boolean
 }
 
 export type Organization = OrganizationSettings & {
