@@ -129,7 +129,7 @@ export function OrganizationSettingsForm({ org }: Props) {
           value={maxModelCalls}
           onChange={(event) => setMaxModelCalls(event.target.value)}
           required
-          min={1}
+          min={5}
           max={100}
           step={1}
           disabled={!isAdmin}
