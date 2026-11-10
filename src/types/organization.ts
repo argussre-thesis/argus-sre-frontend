@@ -6,6 +6,7 @@ export type OrganizationSettings = {
   investigationLevel: AgentLevel
   conversationLevel: AgentLevel
   webSearchToolEnabled: boolean
+  maxModelCalls: number
 }
 
 export type Organization = OrganizationSettings & {

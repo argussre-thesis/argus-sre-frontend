@@ -32,13 +32,15 @@ export function OrganizationSettingsForm({ org }: Props) {
   const [investigationLevel, setInvestigationLevel] = useState(org.investigationLevel)
   const [conversationLevel, setConversationLevel] = useState(org.conversationLevel)
   const [webSearch, setWebSearch] = useState(org.webSearchToolEnabled)
+  const [maxModelCalls, setMaxModelCalls] = useState(String(org.maxModelCalls))
   const update = useUpdateOrganizationSettings()
   const changed =
     Number(minutes) !== org.incidentGroupingWindowMinutes ||
     autoInvestigate !== org.autoInvestigateEnabled ||
     investigationLevel !== org.investigationLevel ||
     conversationLevel !== org.conversationLevel ||
-    webSearch !== org.webSearchToolEnabled
+    webSearch !== org.webSearchToolEnabled ||
+    Number(maxModelCalls) !== org.maxModelCalls
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -48,6 +50,7 @@ export function OrganizationSettingsForm({ org }: Props) {
       investigationLevel,
       conversationLevel,
       webSearchToolEnabled: webSearch,
+      maxModelCalls: Number(maxModelCalls),
     })
   }
 
@@ -117,6 +120,24 @@ export function OrganizationSettingsForm({ org }: Props) {
           onCheckedChange={setWebSearch}
           disabled={!isAdmin}
         />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="max-model-calls">Max model calls</FieldLabel>
+        <Input
+          id="max-model-calls"
+          type="number"
+          value={maxModelCalls}
+          onChange={(event) => setMaxModelCalls(event.target.value)}
+          required
+          min={1}
+          max={100}
+          step={1}
+          disabled={!isAdmin}
+        />
+        <FieldDescription>
+          How many model calls one investigation or conversation turn may make, the final answer
+          included. The agent is told this budget, and a run that reaches it fails.
+        </FieldDescription>
       </Field>
       <FieldError>{update.error?.message}</FieldError>
       <div className="flex items-center gap-4">
