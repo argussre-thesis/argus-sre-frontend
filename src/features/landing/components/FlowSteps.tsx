@@ -36,7 +36,7 @@ export function FlowSteps({ scene, onSceneChange }: Props) {
             data-scene={index}
             aria-current={active ? 'step' : undefined}
             className={cn(
-              'border-l-2 py-6 pl-6 transition-colors duration-500 lg:min-h-72',
+              'border-l-2 py-6 pl-6 transition-colors duration-500 lg:min-h-120',
               active ? 'lg:border-primary' : 'border-border',
             )}
           >
