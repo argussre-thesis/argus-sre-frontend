@@ -1,54 +1,46 @@
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { ApiError } from '@/lib/api-client'
-import type { CreateMcpServerInput } from '@/types/mcp-server'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { McpServerHeadersField } from '@/features/mcp-servers/components/McpServerHeadersField'
+import { McpServerNameField } from '@/features/mcp-servers/components/McpServerNameField'
+import { McpServerTokenField } from '@/features/mcp-servers/components/McpServerTokenField'
+import { mcpServerErrors } from '@/features/mcp-servers/mcpServerErrors'
+import type { McpServerFormValues } from '@/features/mcp-servers/mcpServerHeaders'
 
 type Props = {
-  values: CreateMcpServerInput
-  onChange: (values: CreateMcpServerInput) => void
+  values: McpServerFormValues
+  onChange: (values: McpServerFormValues) => void
   error: Error | null
+  headersError: string | undefined
   tokenRequired: boolean
   tokenDescription: string
-}
-
-function messageFor(error: Error | null, code: string) {
-  return error instanceof ApiError && error.code === code ? error.message : undefined
+  headersDescription: string
 }
 
 export function McpServerFields({
   values,
   onChange,
   error,
+  headersError,
   tokenRequired,
   tokenDescription,
+  headersDescription,
 }: Props) {
-  const nameError = messageFor(error, 'MCP_SERVER_NAME_TAKEN')
-  const urlError = messageFor(error, 'INVALID_MCP_URL')
-  const tokenError = messageFor(error, 'MCP_TOKEN_REQUIRED')
-  const otherError = nameError || urlError || tokenError ? undefined : error?.message
+  const { nameError, urlError, tokenError, otherError } = mcpServerErrors(error)
 
   return (
     <>
-      <Field data-invalid={Boolean(nameError) || undefined}>
-        <FieldLabel htmlFor="mcp-server-name">Name</FieldLabel>
-        {/* The backend's rule. The "-" is escaped for the v-flag regex browsers use. */}
-        <Input
-          id="mcp-server-name"
-          value={values.name}
-          onChange={(event) => onChange({ ...values, name: event.target.value })}
-          required
-          maxLength={20}
-          pattern="[a-z0-9\-]+"
-          placeholder="prod-grafana"
-          autoComplete="off"
-          aria-invalid={Boolean(nameError) || undefined}
-        />
-        <FieldDescription>
-          Prefixes this server's tools, e.g. prod-grafana_query_prometheus. Up to 20 lowercase
-          letters, numbers or hyphens.
-        </FieldDescription>
-        <FieldError>{nameError}</FieldError>
-      </Field>
+      <McpServerNameField
+        value={values.name}
+        onChange={(name) => onChange({ ...values, name })}
+        error={nameError}
+      />
       <Field data-invalid={Boolean(urlError) || undefined}>
         <FieldLabel htmlFor="mcp-server-url">URL</FieldLabel>
         <Input
@@ -62,27 +54,45 @@ export function McpServerFields({
           autoComplete="off"
           aria-invalid={Boolean(urlError) || undefined}
         />
-        <FieldDescription>The server's https address, reachable from the internet.</FieldDescription>
+        <FieldDescription>
+          The server's https address, reachable from the internet. Only servers using Streamable
+          HTTP are supported, not SSE or stdio.
+        </FieldDescription>
         <FieldError>{urlError}</FieldError>
       </Field>
-      <Field data-invalid={Boolean(tokenError) || undefined}>
-        <FieldLabel htmlFor="mcp-server-token">Token</FieldLabel>
-        {/* "new-password" keeps password managers out: a filled-in password would replace the stored token. */}
-        <Input
-          id="mcp-server-token"
-          type="password"
-          value={values.token}
-          onChange={(event) => onChange({ ...values, token: event.target.value })}
-          required={tokenRequired}
-          maxLength={8192}
-          pattern="\s*\S+\s*"
-          title="Enter the token without spaces"
-          autoComplete="new-password"
-          aria-invalid={Boolean(tokenError) || undefined}
-        />
-        <FieldDescription>{tokenDescription}</FieldDescription>
-        <FieldError>{tokenError}</FieldError>
+      <Field>
+        <FieldLabel htmlFor="mcp-server-auth">Authentication</FieldLabel>
+        <Select
+          value={values.authMode}
+          onValueChange={(authMode: McpServerFormValues['authMode']) =>
+            onChange({ ...values, authMode })
+          }
+        >
+          <SelectTrigger id="mcp-server-auth" className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="token">Bearer token</SelectItem>
+            <SelectItem value="headers">Custom headers</SelectItem>
+          </SelectContent>
+        </Select>
       </Field>
+      {values.authMode === 'token' ? (
+        <McpServerTokenField
+          value={values.token}
+          onChange={(token) => onChange({ ...values, token })}
+          error={tokenError}
+          required={tokenRequired}
+          description={tokenDescription}
+        />
+      ) : (
+        <McpServerHeadersField
+          rows={values.headerRows}
+          onChange={(headerRows) => onChange({ ...values, headerRows })}
+          error={headersError ?? tokenError}
+          description={headersDescription}
+        />
+      )}
       <FieldError>{otherError}</FieldError>
     </>
   )

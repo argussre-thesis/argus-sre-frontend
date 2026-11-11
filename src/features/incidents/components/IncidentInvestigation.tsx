@@ -8,6 +8,7 @@ import { InvestigationPicker } from '@/features/incidents/components/Investigati
 import { InvestigationSummary } from '@/features/incidents/components/InvestigationSummary'
 import { RcaReport } from '@/features/incidents/components/RcaReport'
 import { useInvestigateIncident, useInvestigations } from '@/features/incidents/hooks'
+import { useCurrentOrganization } from '@/features/settings/hooks'
 import type { Incident } from '@/types/incident'
 
 type Props = {
@@ -26,6 +27,7 @@ function whyNotInvestigable(incident: Incident) {
 export function IncidentInvestigation({ incident }: Props) {
   const investigations = useInvestigations(incident.id)
   const investigate = useInvestigateIncident(incident.id)
+  const org = useCurrentOrganization()
   // null = follow the newest run, so a new one shows up by itself.
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const latest = investigations.data?.[0]
@@ -68,7 +70,7 @@ export function IncidentInvestigation({ incident }: Props) {
     }
     return (
       <div className="flex flex-col gap-4">
-        <InvestigationSummary investigation={shown} />
+        <InvestigationSummary investigation={shown} effort={org.data?.investigationLevel} />
         {shown.report && <RcaReport report={shown.report} />}
       </div>
     )

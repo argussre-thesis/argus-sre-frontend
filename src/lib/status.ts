@@ -1,13 +1,19 @@
-import type { VariantProps } from 'class-variance-authority'
-import type { badgeVariants } from '@/components/ui/badge'
 import type { AlertStatus, IncidentStatus } from '@/types/incident'
 import type { InvestigationStatus } from '@/types/investigation'
 
-type BadgeVariant = NonNullable<VariantProps<typeof badgeVariants>['variant']>
+type StatusVariant = 'destructive' | 'warning' | 'info' | 'success' | 'secondary'
 
 export type StatusInfo = {
   label: string
-  variant: BadgeVariant
+  variant: StatusVariant
+}
+
+export const statusDot: Record<StatusVariant, string> = {
+  destructive: 'bg-destructive',
+  warning: 'bg-warning',
+  info: 'bg-info',
+  success: 'bg-success',
+  secondary: 'bg-muted-foreground',
 }
 
 // "Traffic light": red needs attention, green is fixed, amber is a setup problem, grey is noise.
@@ -27,7 +33,7 @@ export const investigationStatus: Record<InvestigationStatus, StatusInfo> = {
   failed: { label: 'Failed', variant: 'destructive' },
 }
 
-export const unknownCluster: StatusInfo = { label: 'Unknown cluster', variant: 'warning' }
+export const unknownCluster: StatusInfo = { label: 'Unknown cluster', variant: 'secondary' }
 
 export const testIncident: StatusInfo = { label: 'Test', variant: 'secondary' }
 

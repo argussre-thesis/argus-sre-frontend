@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
+import slackLogo from '@/assets/logos/slack.svg'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Skeleton } from '@/components/ui/skeleton'
 import { AddToSlackButton } from '@/features/settings/components/AddToSlackButton'
+import { SettingsCard } from '@/features/settings/components/SettingsCard'
 import { SlackConnectionDetails } from '@/features/settings/components/SlackConnectionDetails'
 import { SlackOutcomeAlert } from '@/features/settings/components/SlackOutcomeAlert'
 import { useSlackStatus } from '@/features/settings/hooks'
@@ -37,14 +39,18 @@ export function SlackSection() {
   }
 
   return (
-    <section className="flex max-w-md flex-col gap-2">
-      <h2 className="text-sm font-medium">Slack</h2>
-      <p className="text-sm text-muted-foreground">
-        Argus posts each investigation's report to a channel, and answers when someone mentions
-        @argus.
-      </p>
+    <SettingsCard
+      id="slack"
+      title={
+        <>
+          <img src={slackLogo} alt="" className="size-4" />
+          Slack
+        </>
+      }
+      description="Argus posts each investigation's report to a channel, and answers when someone mentions @argus."
+    >
       {outcome && outcomeStillTrue && <SlackOutcomeAlert outcome={outcome} />}
       {renderStatus()}
-    </section>
+    </SettingsCard>
   )
 }

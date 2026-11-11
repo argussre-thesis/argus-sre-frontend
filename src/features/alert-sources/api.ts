@@ -8,7 +8,6 @@ import type {
 // Where senders post alerts: outside /api/v1 and authorized by the webhook token, not Clerk.
 export const webhookUrl = `${apiUrl}/webhooks/v1/alerts`
 
-// The backend's default cluster label.
 export const defaultClusterLabel = 'cluster'
 
 function alertSourcesPath(orgId: string) {

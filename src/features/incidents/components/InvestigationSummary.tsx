@@ -4,12 +4,14 @@ import { StatusBadge } from '@/components/common/StatusBadge'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { investigationStatus } from '@/lib/status'
 import type { Investigation } from '@/types/investigation'
+import type { AgentLevel } from '@/types/organization'
 
 type Props = {
   investigation: Investigation
+  effort?: AgentLevel
 }
 
-export function InvestigationSummary({ investigation }: Props) {
+export function InvestigationSummary({ investigation, effort }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <dl className="flex flex-wrap gap-x-8 gap-y-4 text-sm">
@@ -33,12 +35,12 @@ export function InvestigationSummary({ investigation }: Props) {
             </dd>
           </div>
         )}
-        <div className="flex flex-col gap-1">
-          <dt className="text-muted-foreground">Model</dt>
-          <dd className="font-mono">
-            {investigation.model} ({investigation.effort})
-          </dd>
-        </div>
+        {effort && (
+          <div className="flex flex-col gap-1">
+            <dt className="text-muted-foreground">Effort</dt>
+            <dd className="capitalize">{effort}</dd>
+          </div>
+        )}
       </dl>
       {investigation.status === 'running' && (
         <p className="text-sm text-muted-foreground">

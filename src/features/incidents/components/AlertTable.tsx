@@ -1,3 +1,4 @@
+import { TableCard } from '@/components/common/TableCard'
 import {
   Table,
   TableBody,
@@ -14,7 +15,7 @@ type Props = {
 
 export function AlertTable({ alerts }: Props) {
   return (
-    <div className="rounded-lg border">
+    <TableCard>
       <Table>
         <TableHeader>
           <TableRow>
@@ -37,6 +38,6 @@ export function AlertTable({ alerts }: Props) {
           ))}
         </TableBody>
       </Table>
-    </div>
+    </TableCard>
   )
 }

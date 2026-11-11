@@ -3,12 +3,14 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { PageHeader } from '@/components/common/PageHeader'
 import { Skeleton } from '@/components/ui/skeleton'
-import { AddMcpServerDialog } from '@/features/mcp-servers/components/AddMcpServerDialog'
+import { useClusters } from '@/features/clusters/hooks'
+import { IntegrationCards } from '@/features/mcp-servers/components/IntegrationCards'
 import { McpServerTable } from '@/features/mcp-servers/components/McpServerTable'
 import { useMcpServers } from '@/features/mcp-servers/hooks'
 
-export function McpServersPage() {
+export function IntegrationsPage() {
   const mcpServers = useMcpServers()
+  const clusters = useClusters()
 
   function renderList() {
     if (mcpServers.isPending) {
@@ -34,7 +36,7 @@ export function McpServersPage() {
         <EmptyState
           icon={Plug}
           title="No MCP servers yet"
-          description="Add a remote MCP server to give the agent more tools, for example Grafana queries."
+          description="Add one above to give the agent more tools, for example Grafana queries."
         />
       )
     }
@@ -44,9 +46,12 @@ export function McpServersPage() {
   return (
     <>
       <PageHeader
-        title="MCP servers"
-        description="Remote MCP servers whose tools the agent can use."
-        actions={<AddMcpServerDialog />}
+        title="Integrations"
+        description="Connect the systems the agent can use during investigations."
+      />
+      <IntegrationCards
+        clusterCount={clusters.data?.length ?? 0}
+        mcpServers={mcpServers.data ?? []}
       />
       {renderList()}
     </>
