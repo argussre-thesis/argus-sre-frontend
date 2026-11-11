@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { IncidentPreview } from '@/features/landing/components/IncidentPreview'
 import { LandingFacts } from '@/features/landing/components/LandingFacts'
 import { FlowAnimation } from '@/features/landing/components/FlowAnimation'
+import { SafetyCards } from '@/features/landing/components/SafetyCards'
+import { SlackPreview } from '@/features/landing/components/SlackPreview'
 import { integrations } from '@/features/landing/integrations'
 import { cn } from '@/lib/utils'
 
@@ -45,7 +47,9 @@ export function LandingPage() {
       </section>
 
       <IncidentPreview />
+      <SlackPreview />
       <FlowAnimation />
+      <SafetyCards />
       <LandingFacts />
 
       <section className="flex flex-col items-start gap-4 border-t pt-12">

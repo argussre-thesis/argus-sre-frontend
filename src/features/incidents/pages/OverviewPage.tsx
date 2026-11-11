@@ -9,6 +9,7 @@ import { IncidentTable } from '@/features/incidents/components/IncidentTable'
 import { StatCard } from '@/features/incidents/components/StatCard'
 import { useOpenIncidentsSummary, useRecentIncidentsSummary } from '@/features/incidents/hooks'
 import { incidentStats } from '@/features/incidents/incidentFilters'
+import { SetupChecklist } from '@/features/setup/components/SetupChecklist'
 import { formatDuration } from '@/lib/utils'
 
 const ATTENTION_ROWS = 10
@@ -96,6 +97,7 @@ export function OverviewPage() {
   return (
     <>
       <PageHeader title="Overview" description="What's happening across your clusters." />
+      <SetupChecklist />
       {renderContent()}
     </>
   )

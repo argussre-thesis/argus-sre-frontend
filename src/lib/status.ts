@@ -42,3 +42,5 @@ export const runnerNeverConnected: StatusInfo = { label: 'Never connected', vari
 export const alertSourceNeverReceived: StatusInfo = { label: 'Never received', variant: 'warning' }
 
 export const alertSourceNoClusters: StatusInfo = { label: 'No clusters', variant: 'warning' }
+
+export const setupStepDone: StatusInfo = { label: 'Done', variant: 'success' }
