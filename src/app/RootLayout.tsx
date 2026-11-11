@@ -16,6 +16,8 @@ export function RootLayout() {
       routerReplace={(to) => navigate(to, { replace: true })}
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
+      signInFallbackRedirectUrl="/app"
+      signUpFallbackRedirectUrl="/app"
     >
       <Outlet />
     </ClerkProvider>

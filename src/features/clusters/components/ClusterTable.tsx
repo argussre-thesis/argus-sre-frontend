@@ -27,7 +27,7 @@ export function ClusterTable({ clusters, openIncidents }: Props) {
     const count = openIncidents.filter((incident) => incident.cluster?.id === cluster.id).length
     if (count === 0) return '0'
     return (
-      <Link to={`/incidents?status=OPEN&range=all&cluster=${cluster.id}`} className="underline">
+      <Link to={`/app/incidents?status=OPEN&range=all&cluster=${cluster.id}`} className="underline">
         {count}
       </Link>
     )

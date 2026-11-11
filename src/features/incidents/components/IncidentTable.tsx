@@ -42,7 +42,7 @@ export function IncidentTable({ incidents }: Props) {
               <TableCell className="font-medium whitespace-normal">
                 <div className="flex items-center gap-2">
                   {/* The stretched ::after makes the whole row clickable and it stays a real link. */}
-                  <Link to={`/incidents/${incident.id}`} className="after:absolute after:inset-0">
+                  <Link to={`/app/incidents/${incident.id}`} className="after:absolute after:inset-0">
                     {incident.title}
                   </Link>
                   {repeats(incident) > 1 && (

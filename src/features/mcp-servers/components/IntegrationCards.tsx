@@ -39,7 +39,7 @@ export function IntegrationCards({ clusterCount, mcpServers }: Props) {
         footer={
           clusterCount > 0 && (
             <Link
-              to="/clusters"
+              to="/app/clusters"
               className="text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
             >
               {clusterCount} {clusterCount === 1 ? 'cluster' : 'clusters'}
