@@ -71,7 +71,20 @@ export function AddGitHubDialog({ trigger }: Props) {
             onChange={(token) => setValues({ ...values, token })}
             error={tokenError}
             required
-            description="Create a fine-grained personal access token and give it only the access you want the agent to have. Investigations start on their own from alerts."
+            description={
+              <>
+                Create a{' '}
+                <a
+                  href="https://github.com/settings/personal-access-tokens/new"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  fine-grained personal access token
+                </a>{' '}
+                with read-only access to the repos the agent should see, since investigations start
+                on their own from alert text.
+              </>
+            }
           />
           <FieldError>{urlError ?? otherError}</FieldError>
           <DialogFooter>

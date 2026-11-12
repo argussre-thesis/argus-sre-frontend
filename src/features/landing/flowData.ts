@@ -89,3 +89,6 @@ export const scenes: FlowScene[] = [
     links: ['agent-report'],
   },
 ]
+
+// Element ids of the steps in FlowSteps, read back by FlowAnimation to tell which one is in view.
+export const stepIds = scenes.map((_, index) => `flow-step-${index}`)

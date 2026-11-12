@@ -37,16 +37,16 @@ export function AlertRow({ alert }: Props) {
             <div className="text-muted-foreground">{alert.annotations.summary}</div>
           )}
         </TableCell>
-        <TableCell className="text-muted-foreground">
+        <TableCell className="hidden text-muted-foreground md:table-cell">
           {alert.alertSource?.name ?? 'Deleted source'}
         </TableCell>
         <TableCell>
           <StatusBadge status={alertStatus[alert.status]} />
         </TableCell>
-        <TableCell className="text-muted-foreground">
+        <TableCell className="hidden text-muted-foreground md:table-cell">
           <RelativeTime iso={alert.startsAt} />
         </TableCell>
-        <TableCell className="text-muted-foreground">
+        <TableCell className="hidden text-muted-foreground md:table-cell">
           <RelativeTime iso={alert.lastReceivedAt} />
         </TableCell>
         <TableCell className="text-right">

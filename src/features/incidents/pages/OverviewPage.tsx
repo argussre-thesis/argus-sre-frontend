@@ -49,7 +49,7 @@ export function OverviewPage() {
     const recentMore = recent.data.nextCursor !== null
     const stats = incidentStats(recent.data.incidents)
     const firing = openIncidents.reduce((sum, incident) => sum + incident.firingAlertCount, 0)
-    const sampleHint = recentMore ? 'From the latest 100 incidents' : 'Across all incidents'
+    const sampleHint = recentMore ? 'From the latest 100 incidents' : 'Test incidents not counted'
 
     return (
       <>

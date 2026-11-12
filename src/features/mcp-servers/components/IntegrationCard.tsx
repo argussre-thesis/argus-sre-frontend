@@ -1,5 +1,13 @@
+import { Plus } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 
 type Props = {
   icon: ReactNode
@@ -16,6 +24,12 @@ export function IntegrationCard({ icon, dialog, description, footer }: Props) {
           {icon}
           {dialog}
         </CardTitle>
+        <CardAction>
+          <Plus
+            aria-hidden
+            className="size-4 text-muted-foreground group-hover/card:text-foreground"
+          />
+        </CardAction>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       {/* Sits above the card's stretched button, so a link here stays clickable. */}

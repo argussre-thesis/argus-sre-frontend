@@ -1,39 +1,19 @@
-import { useEffect, useRef } from 'react'
-import { scenes } from '@/features/landing/flowData'
+import { scenes, stepIds } from '@/features/landing/flowData'
 import { cn } from '@/lib/utils'
 
 type Props = {
   scene: number
-  onSceneChange: (scene: number) => void
 }
 
-export function FlowSteps({ scene, onSceneChange }: Props) {
-  const listRef = useRef<HTMLOListElement>(null)
-
-  useEffect(() => {
-    const list = listRef.current
-    if (!list) return
-    // The margins shrink the viewport to its middle line, so the step crossing it is the active one.
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) onSceneChange(Number((entry.target as HTMLElement).dataset.scene))
-        }
-      },
-      { rootMargin: '-50% 0px -50% 0px' },
-    )
-    for (const item of list.children) observer.observe(item)
-    return () => observer.disconnect()
-  }, [onSceneChange])
-
+export function FlowSteps({ scene }: Props) {
   return (
-    <ol ref={listRef} className="flex flex-col">
+    <ol className="flex flex-col">
       {scenes.map((step, index) => {
         const active = index === scene
         return (
           <li
             key={step.title}
-            data-scene={index}
+            id={stepIds[index]}
             aria-current={active ? 'step' : undefined}
             className={cn(
               'border-l-2 py-6 pl-6 transition-colors duration-500 lg:min-h-120',

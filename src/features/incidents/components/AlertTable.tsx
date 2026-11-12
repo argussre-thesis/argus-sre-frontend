@@ -19,15 +19,16 @@ export function AlertTable({ alerts }: Props) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>
+            {/* w-0 shrinks the icon columns to their button, so the spare width goes to the text. */}
+            <TableHead className="w-0">
               <span className="sr-only">Details</span>
             </TableHead>
             <TableHead>Alert</TableHead>
-            <TableHead>Source</TableHead>
+            <TableHead className="hidden md:table-cell">Source</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Started</TableHead>
-            <TableHead>Last received</TableHead>
-            <TableHead>
+            <TableHead className="hidden md:table-cell">Started</TableHead>
+            <TableHead className="hidden md:table-cell">Last received</TableHead>
+            <TableHead className="w-0">
               <span className="sr-only">Link</span>
             </TableHead>
           </TableRow>

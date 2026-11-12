@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 
@@ -6,7 +7,7 @@ type Props = {
   onChange: (value: string) => void
   error: string | undefined
   required: boolean
-  description: string
+  description: ReactNode
 }
 
 export function McpServerTokenField({ value, onChange, error, required, description }: Props) {

@@ -39,7 +39,7 @@ export function ClusterTable({ clusters, openIncidents }: Props) {
         <TableHeader>
           <TableRow>
             <TableHead>Cluster</TableHead>
-            <TableHead className="text-right">Open incidents</TableHead>
+            <TableHead className="pr-8 text-right">Open incidents</TableHead>
             <TableHead>Runner last connected</TableHead>
             <TableHead>Added</TableHead>
             <TableHead>
@@ -51,7 +51,7 @@ export function ClusterTable({ clusters, openIncidents }: Props) {
           {clusters.map((cluster) => (
             <TableRow key={cluster.id}>
               <TableCell className="font-medium">{cluster.name}</TableCell>
-              <TableCell className="text-right tabular-nums">{openCount(cluster)}</TableCell>
+              <TableCell className="pr-8 text-right tabular-nums">{openCount(cluster)}</TableCell>
               <TableCell className="text-muted-foreground">
                 {cluster.lastConnectedAt ? (
                   <RelativeTime iso={cluster.lastConnectedAt} />

@@ -103,7 +103,7 @@ export function AddGrafanaDialog({ trigger }: Props) {
             onChange={(token) => setValues({ ...values, token })}
             error={tokenError}
             required
-            description="A Grafana service account token with read-only access. Investigations start on their own from alerts."
+            description="A Grafana service account token with read-only access, since investigations start on their own from alert text."
           />
           <FieldError>{otherError}</FieldError>
           <DialogFooter>
