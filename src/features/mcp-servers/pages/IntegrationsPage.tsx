@@ -53,7 +53,10 @@ export function IntegrationsPage() {
         clusterCount={clusters.data?.length ?? 0}
         mcpServers={mcpServers.data ?? []}
       />
-      {renderList()}
+      <section className="flex flex-col gap-2">
+        <h2 className="text-sm font-medium">MCP servers</h2>
+        {renderList()}
+      </section>
     </>
   )
 }

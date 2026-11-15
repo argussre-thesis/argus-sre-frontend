@@ -42,7 +42,7 @@ export function ClusterChecklist({ selected, onChange }: Props) {
     if (clusters.data.length === 0) {
       return (
         <FieldDescription>
-          No clusters yet. <Link to="/clusters">Add a cluster</Link> first.
+          No clusters yet. <Link to="/app/clusters">Add a cluster</Link> first.
         </FieldDescription>
       )
     }

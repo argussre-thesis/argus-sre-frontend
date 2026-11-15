@@ -24,8 +24,8 @@ export function McpServerNameField({ value, onChange, error }: Props) {
         aria-invalid={Boolean(error) || undefined}
       />
       <FieldDescription>
-        Prefixes this server's tools, e.g. prod-grafana_query_prometheus. Up to 20 lowercase
-        letters, numbers or hyphens.
+        Prefixes this server's tool names ({value || 'name'}_…). Up to 20 lowercase letters,
+        numbers or hyphens.
       </FieldDescription>
       <FieldError>{error}</FieldError>
     </Field>

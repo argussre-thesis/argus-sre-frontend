@@ -18,7 +18,7 @@ export function AlertDetails({ alert }: Props) {
           <dt className="text-muted-foreground">Labels</dt>
           <dd className="flex flex-wrap gap-1">
             {labels.map(([key, value]) => (
-              <Badge key={key} variant="secondary" className="font-mono">
+              <Badge key={key} variant="secondary" className="h-auto font-mono break-all whitespace-normal">
                 {key}={value}
               </Badge>
             ))}

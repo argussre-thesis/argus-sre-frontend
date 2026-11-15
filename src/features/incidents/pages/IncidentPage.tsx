@@ -1,5 +1,5 @@
-import { BellOff, CircleCheck, SearchX } from 'lucide-react'
-import { useParams } from 'react-router'
+import { ArrowLeft, BellOff, CircleCheck, SearchX } from 'lucide-react'
+import { Link, useLocation, useParams } from 'react-router'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { PageHeader } from '@/components/common/PageHeader'
@@ -14,6 +14,7 @@ import { ApiError } from '@/lib/api-client'
 export function IncidentPage() {
   // The route is /incidents/:incidentId, so the param is always set.
   const { incidentId = '' } = useParams()
+  const { state } = useLocation()
   const incident = useIncident(incidentId)
   const resolve = useResolveIncident(incidentId)
 
@@ -48,17 +49,31 @@ export function IncidentPage() {
   const { alerts } = incident.data
   return (
     <>
-      <PageHeader
-        title={incident.data.title}
-        actions={
-          incident.data.status === 'OPEN' && (
-            <Button variant="outline" disabled={resolve.isPending} onClick={() => resolve.mutate()}>
-              <CircleCheck />
-              {resolve.isPending ? 'Resolving…' : 'Resolve'}
-            </Button>
-          )
-        }
-      />
+      <div className="flex flex-col gap-2">
+        {/* The list passes its filters along, so going back keeps them. */}
+        <Link
+          to={`/app/incidents${typeof state?.listSearch === 'string' ? state.listSearch : ''}`}
+          className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Incidents
+        </Link>
+        <PageHeader
+          title={incident.data.title}
+          actions={
+            incident.data.status === 'OPEN' && (
+              <Button
+                variant="outline"
+                disabled={resolve.isPending}
+                onClick={() => resolve.mutate()}
+              >
+                <CircleCheck />
+                {resolve.isPending ? 'Resolving…' : 'Resolve'}
+              </Button>
+            )
+          }
+        />
+      </div>
       {resolve.isError && (
         <ErrorState
           title="Couldn't resolve the incident"

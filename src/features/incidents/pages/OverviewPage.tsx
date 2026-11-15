@@ -9,6 +9,7 @@ import { IncidentTable } from '@/features/incidents/components/IncidentTable'
 import { StatCard } from '@/features/incidents/components/StatCard'
 import { useOpenIncidentsSummary, useRecentIncidentsSummary } from '@/features/incidents/hooks'
 import { incidentStats } from '@/features/incidents/incidentFilters'
+import { SetupChecklist } from '@/features/setup/components/SetupChecklist'
 import { formatDuration } from '@/lib/utils'
 
 const ATTENTION_ROWS = 10
@@ -48,7 +49,7 @@ export function OverviewPage() {
     const recentMore = recent.data.nextCursor !== null
     const stats = incidentStats(recent.data.incidents)
     const firing = openIncidents.reduce((sum, incident) => sum + incident.firingAlertCount, 0)
-    const sampleHint = recentMore ? 'From the latest 100 incidents' : 'Across all incidents'
+    const sampleHint = recentMore ? 'From the latest 100 incidents' : 'Test incidents not counted'
 
     return (
       <>
@@ -75,7 +76,7 @@ export function OverviewPage() {
             <h2 className="text-sm font-medium">Needs attention</h2>
             {openIncidents.length > ATTENTION_ROWS && (
               <Button asChild variant="ghost" size="sm">
-                <Link to="/incidents?status=OPEN&range=all">View all open</Link>
+                <Link to="/app/incidents?status=OPEN&range=all">View all open</Link>
               </Button>
             )}
           </div>
@@ -96,6 +97,7 @@ export function OverviewPage() {
   return (
     <>
       <PageHeader title="Overview" description="What's happening across your clusters." />
+      <SetupChecklist />
       {renderContent()}
     </>
   )

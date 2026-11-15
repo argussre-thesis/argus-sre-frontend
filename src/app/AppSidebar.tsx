@@ -1,5 +1,5 @@
 import { OrganizationSwitcher } from '@clerk/react'
-import { LayoutDashboard, Plug, Server, Settings, Siren, Webhook } from 'lucide-react'
+import { LayoutDashboard, MessageSquare, Plug, Server, Settings, Siren, Webhook } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
 import {
   Sidebar,
@@ -14,12 +14,13 @@ import {
 } from '@/components/ui/sidebar'
 
 const navItems = [
-  { to: '/overview', label: 'Overview', icon: LayoutDashboard },
-  { to: '/incidents', label: 'Incidents', icon: Siren },
-  { to: '/clusters', label: 'Clusters', icon: Server },
-  { to: '/alert-sources', label: 'Alert sources', icon: Webhook },
-  { to: '/integrations', label: 'Integrations', icon: Plug },
-  { to: '/settings', label: 'Settings', icon: Settings },
+  { to: '/app/overview', label: 'Overview', icon: LayoutDashboard },
+  { to: '/app/incidents', label: 'Incidents', icon: Siren },
+  { to: '/app/clusters', label: 'Clusters', icon: Server },
+  { to: '/app/alert-sources', label: 'Alert sources', icon: Webhook },
+  { to: '/app/integrations', label: 'Integrations', icon: Plug },
+  { to: '/app/settings', label: 'Settings', icon: Settings },
+  { to: '/app/contact', label: 'Contact', icon: MessageSquare },
 ]
 
 export function AppSidebar() {
