@@ -16,7 +16,9 @@ import {
 } from '@/components/ui/dialog'
 import { Field, FieldDescription, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
+import { CommandSteps } from '@/features/clusters/components/CommandSteps'
 import { useCreateCluster } from '@/features/clusters/hooks'
+import { runnerInstallSteps } from '@/features/clusters/runnerInstall'
 
 type Props = {
   trigger?: ReactNode
@@ -54,6 +56,8 @@ export function AddClusterDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent
+        // grid-cols-1 caps the column at the dialog width, so long commands scroll instead of widening it.
+        className={create.data ? 'grid-cols-1 sm:max-w-2xl' : undefined}
         // The token is never shown again, so a stray click outside must not close it.
         onInteractOutside={create.data ? (event) => event.preventDefault() : undefined}
       >
@@ -62,11 +66,16 @@ export function AddClusterDialog({
             <DialogHeader>
               <DialogTitle>Cluster {create.data.cluster.name} added</DialogTitle>
               <DialogDescription>
-                Copy the runner token and store it somewhere safe, such as a password manager or a
-                Kubernetes Secret. You need it to install the runner. It is shown only once.
+                Install the runner now, or copy the token and store it somewhere safe, such as a
+                password manager. It is shown only once.
               </DialogDescription>
             </DialogHeader>
             <CopyField label="Runner token" value={create.data.token} />
+            <CommandSteps
+              title="Install the runner"
+              steps={runnerInstallSteps(create.data.cluster.name, create.data.token)}
+              note={`Run them with kubectl pointed at this cluster. Once the pod is running, the cluster's "Runner last connected" time fills in.`}
+            />
             <DialogFooter>
               <DialogClose asChild>
                 <Button>Done</Button>

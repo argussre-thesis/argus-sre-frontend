@@ -10,7 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { CommandSteps } from '@/features/clusters/components/CommandSteps'
 import { useRotateClusterToken } from '@/features/clusters/hooks'
+import { runnerRotateSteps } from '@/features/clusters/runnerInstall'
 import type { Cluster } from '@/types/cluster'
 
 type Props = {
@@ -30,6 +32,8 @@ export function RotateClusterTokenDialog({ cluster, open, onOpenChange }: Props)
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
+        // grid-cols-1 caps the column at the dialog width, so long commands scroll instead of widening it.
+        className={rotate.data ? 'grid-cols-1 sm:max-w-2xl' : undefined}
         // The token is never shown again, so a stray click outside must not close it.
         onInteractOutside={rotate.data ? (event) => event.preventDefault() : undefined}
       >
@@ -38,11 +42,16 @@ export function RotateClusterTokenDialog({ cluster, open, onOpenChange }: Props)
             <DialogHeader>
               <DialogTitle>New runner token for {cluster.name}</DialogTitle>
               <DialogDescription>
-                Copy the token and update the runner with it. The old token no longer works. It is
-                shown only once.
+                The old token no longer works, so the runner is disconnected until you update it.
+                The new token is shown only once.
               </DialogDescription>
             </DialogHeader>
             <CopyField label="Runner token" value={rotate.data.token} />
+            <CommandSteps
+              title="Update the runner"
+              steps={runnerRotateSteps(rotate.data.token)}
+              note="The runner reads its token only when it starts, so the restart is required. If you installed it in another namespace, change -n argus-runner."
+            />
             <DialogFooter>
               <DialogClose asChild>
                 <Button>Done</Button>
