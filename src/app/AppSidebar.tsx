@@ -12,6 +12,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { contactEnabled } from '@/lib/features'
 
 const navItems = [
   { to: '/app/overview', label: 'Overview', icon: LayoutDashboard },
@@ -20,7 +21,7 @@ const navItems = [
   { to: '/app/alert-sources', label: 'Alert sources', icon: Webhook },
   { to: '/app/integrations', label: 'Integrations', icon: Plug },
   { to: '/app/settings', label: 'Settings', icon: Settings },
-  { to: '/app/contact', label: 'Contact', icon: MessageSquare },
+  ...(contactEnabled ? [{ to: '/app/contact', label: 'Contact', icon: MessageSquare }] : []),
 ]
 
 export function AppSidebar() {

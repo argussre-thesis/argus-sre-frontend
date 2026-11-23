@@ -18,6 +18,7 @@ import { PrivacyPage } from '@/features/legal/pages/PrivacyPage'
 import { TermsPage } from '@/features/legal/pages/TermsPage'
 import { IntegrationsPage } from '@/features/mcp-servers/pages/IntegrationsPage'
 import { SettingsPage } from '@/features/settings/pages/SettingsPage'
+import { contactEnabled } from '@/lib/features'
 
 const legacyPaths = [
   '/overview',
@@ -37,7 +38,7 @@ export const router = createBrowserRouter([
         element: <PublicLayout />,
         children: [
           { path: '/', element: <LandingPage /> },
-          { path: '/contact', element: <ContactPage /> },
+          ...(contactEnabled ? [{ path: '/contact', element: <ContactPage /> }] : []),
           { path: '/privacy', element: <PrivacyPage /> },
           { path: '/terms', element: <TermsPage /> },
           { path: '*', element: <NotFoundPage /> },
@@ -62,7 +63,7 @@ export const router = createBrowserRouter([
           { path: 'alert-sources', element: <AlertSourcesPage /> },
           { path: 'integrations', element: <IntegrationsPage /> },
           { path: 'settings', element: <SettingsPage /> },
-          { path: 'contact', element: <AppContactPage /> },
+          ...(contactEnabled ? [{ path: 'contact', element: <AppContactPage /> }] : []),
         ],
       },
       ...legacyPaths.map((path) => ({ path, element: <LegacyRedirect /> })),
