@@ -1,5 +1,5 @@
-import { Eye } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { Logo } from '@/components/common/Logo'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -20,7 +20,7 @@ export function SlackMessage({ author, time, app, children }: Props) {
           app ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
         )}
       >
-        {app ? <Eye className="size-4" /> : author.slice(0, 1)}
+        {app ? <Logo className="size-4" /> : author.slice(0, 1)}
       </div>
       <div className="flex min-w-0 flex-col gap-1">
         <p className="flex items-center gap-2">

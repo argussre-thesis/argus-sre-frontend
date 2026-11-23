@@ -1,6 +1,6 @@
 import { useAuth } from '@clerk/react'
-import { Eye } from 'lucide-react'
 import { Link, Outlet } from 'react-router'
+import { Logo } from '@/components/common/Logo'
 import { ThemeToggle } from '@/components/common/ThemeToggle'
 import { Button } from '@/components/ui/button'
 
@@ -14,7 +14,7 @@ export function PublicLayout() {
       <header className="border-b">
         <div className={`${container} flex h-14 items-center gap-2`}>
           <Link to="/" className="flex items-center gap-2 font-semibold">
-            <Eye className="size-5 text-primary" aria-hidden />
+            <Logo className="size-5 text-primary" />
             Argus
           </Link>
           <div className="ml-auto flex items-center gap-2">
