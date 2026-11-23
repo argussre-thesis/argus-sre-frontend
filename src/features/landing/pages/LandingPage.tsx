@@ -1,11 +1,13 @@
 import { useAuth } from '@clerk/react'
+import { CirclePlay } from 'lucide-react'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
-import { IncidentPreview } from '@/features/landing/components/IncidentPreview'
+import { DemoDialog } from '@/features/landing/components/DemoDialog'
 import { LandingFacts } from '@/features/landing/components/LandingFacts'
 import { FlowAnimation } from '@/features/landing/components/FlowAnimation'
+import { LoopVideo } from '@/features/landing/components/LoopVideo'
 import { SafetyCards } from '@/features/landing/components/SafetyCards'
-import { SlackPreview } from '@/features/landing/components/SlackPreview'
+import { SetupVideo } from '@/features/landing/components/SetupVideo'
 import { integrations } from '@/features/landing/integrations'
 import { cn } from '@/lib/utils'
 
@@ -29,9 +31,26 @@ export function LandingPage() {
           <Button asChild size="lg">
             <Link to={cta.to}>{cta.label}</Link>
           </Button>
-          <Button asChild size="lg" variant="outline">
-            <a href="#how-it-works">See how it works</a>
-          </Button>
+          <div className="group relative isolate">
+            <span
+              aria-hidden
+              className="absolute -inset-1 -z-10 animate-pulse rounded-lg bg-primary/50 blur-md group-hover:animate-none group-hover:bg-primary/80 motion-reduce:animate-none"
+            />
+            <DemoDialog
+              video="demo"
+              title="Argus demo"
+              trigger={
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-primary hover:bg-background dark:border-primary dark:bg-background dark:hover:bg-background"
+                >
+                  <CirclePlay aria-hidden />
+                  Watch the demo
+                </Button>
+              }
+            />
+          </div>
         </div>
         <ul
           aria-label="Works with"
@@ -46,9 +65,9 @@ export function LandingPage() {
         </ul>
       </section>
 
-      <IncidentPreview />
-      <SlackPreview />
+      <LoopVideo />
       <FlowAnimation />
+      <SetupVideo />
       <SafetyCards />
       <LandingFacts />
 
