@@ -25,3 +25,6 @@ dist-ssr
 
 CONTEXT.md
 CLAUDE.md
+.claude/
+.agents/
+AGENTS.md
