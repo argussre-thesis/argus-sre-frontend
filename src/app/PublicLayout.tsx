@@ -3,6 +3,7 @@ import { Link, Outlet } from 'react-router'
 import { Logo } from '@/components/common/Logo'
 import { ThemeToggle } from '@/components/common/ThemeToggle'
 import { Button } from '@/components/ui/button'
+import { contactEnabled } from '@/lib/features'
 
 const container = 'mx-auto w-full max-w-6xl px-6'
 
@@ -49,9 +50,11 @@ export function PublicLayout() {
           className={`${container} flex h-14 items-center gap-6 text-sm text-muted-foreground`}
         >
           <span className="mr-auto">Argus SRE</span>
-          <Link to="/contact" className="hover:text-foreground">
-            Contact
-          </Link>
+          {contactEnabled && (
+            <Link to="/contact" className="hover:text-foreground">
+              Contact
+            </Link>
+          )}
           <Link to="/privacy" className="hover:text-foreground">
             Privacy
           </Link>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { contactEnabled } from '@/lib/features'
 
 export type LegalSection = {
   heading: string
@@ -38,13 +39,15 @@ export function LegalDocument({ title, updated, intro, sections }: Props) {
           )}
         </section>
       ))}
-      <p>
-        Questions?{' '}
-        <Link to="/contact" className="underline underline-offset-4">
-          Contact us
-        </Link>
-        .
-      </p>
+      {contactEnabled && (
+        <p>
+          Questions?{' '}
+          <Link to="/contact" className="underline underline-offset-4">
+            Contact us
+          </Link>
+          .
+        </p>
+      )}
     </article>
   )
 }
